@@ -1,0 +1,1844 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Paw & Polish Booking API",
+    "version": "1.0.0",
+    "description": "Authenticated first-party booking API. This contract intentionally contains no Kravos-specific authentication, actions, or endpoints."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Same-origin Next.js application."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Catalogue"
+    },
+    {
+      "name": "Pets"
+    },
+    {
+      "name": "Availability"
+    },
+    {
+      "name": "Appointments"
+    }
+  ],
+  "paths": {
+    "/api/v1/services": {
+      "get": {
+        "operationId": "listServices",
+        "summary": "List active services",
+        "security": [
+          {
+            "SupabaseSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ServicesSuccess"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/groomers": {
+      "get": {
+        "operationId": "listGroomers",
+        "summary": "List active groomers",
+        "security": [
+          {
+            "SupabaseSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GroomersSuccess"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/pets": {
+      "get": {
+        "operationId": "listPets",
+        "summary": "List current customer's pets",
+        "security": [
+          {
+            "SupabaseSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PetsSuccess"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPet",
+        "summary": "Create a current-customer pet",
+        "security": [
+          {
+            "SupabaseSession": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/PetCreated"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePetRequest"
+              },
+              "example": {
+                "name": "Milo",
+                "breed": "Golden Retriever",
+                "size": "LARGE",
+                "ageYears": 4,
+                "notes": "Nervous around dryers."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pets/{petId}": {
+      "patch": {
+        "operationId": "updatePet",
+        "summary": "Update a current-customer pet",
+        "security": [
+          {
+            "SupabaseSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PetSuccess"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "404": {
+            "$ref": "#/components/responses/PetNotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePetRequest"
+              },
+              "example": {
+                "ageYears": 5
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PetId"
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deletePet",
+        "summary": "Delete a current-customer pet",
+        "security": [
+          {
+            "SupabaseSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PetDeleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "404": {
+            "$ref": "#/components/responses/PetNotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PetId"
+          }
+        ]
+      }
+    },
+    "/api/v1/availability/search": {
+      "post": {
+        "operationId": "searchAvailability",
+        "summary": "Search server-calculated availability",
+        "security": [
+          {
+            "SupabaseSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AvailabilitySuccess"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "404": {
+            "$ref": "#/components/responses/PetNotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "Availability is advisory. Create or reschedule remains the authoritative transactional slot check.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvailabilitySearchRequest"
+              },
+              "example": {
+                "petId": "00000000-0000-4000-8000-000000005002",
+                "selectedServiceIds": [
+                  "00000000-0000-4000-8000-000000005004"
+                ],
+                "groomerId": "00000000-0000-4000-8000-000000005003",
+                "startsOn": "2028-09-04",
+                "endsOn": "2028-09-04"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/appointments": {
+      "get": {
+        "operationId": "listAppointments",
+        "summary": "List current customer's appointments",
+        "security": [
+          {
+            "SupabaseSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AppointmentsSuccess"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createAppointment",
+        "summary": "Create a confirmed appointment",
+        "security": [
+          {
+            "SupabaseSession": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/AppointmentCreated"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "404": {
+            "$ref": "#/components/responses/PetNotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/CreateAppointmentConflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "The customer ID, price, duration, service end, and buffer are server derived. `409` can represent a stale slot or lifecycle idempotency conflict; use its error code to distinguish outcomes.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointmentRequest"
+              },
+              "example": {
+                "petId": "00000000-0000-4000-8000-000000005002",
+                "groomerId": "00000000-0000-4000-8000-000000005003",
+                "selectedServiceIds": [
+                  "00000000-0000-4000-8000-000000005004"
+                ],
+                "startsAt": "2028-09-04T13:00:00.000Z"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ]
+      }
+    },
+    "/api/v1/appointments/{appointmentId}/reschedule": {
+      "post": {
+        "operationId": "rescheduleAppointment",
+        "summary": "Reschedule a customer appointment",
+        "security": [
+          {
+            "SupabaseSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AppointmentSuccess"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/LifecycleForbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/AppointmentNotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/RescheduleConflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleAppointmentRequest"
+              },
+              "example": {
+                "groomerId": "00000000-0000-4000-8000-000000005003",
+                "selectedServiceIds": [
+                  "00000000-0000-4000-8000-000000005004"
+                ],
+                "startsAt": "2028-09-04T15:00:00.000Z"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AppointmentId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ]
+      }
+    },
+    "/api/v1/appointments/{appointmentId}/cancel": {
+      "post": {
+        "operationId": "cancelAppointment",
+        "summary": "Cancel an appointment",
+        "security": [
+          {
+            "SupabaseSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AppointmentSuccess"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/LifecycleForbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/AppointmentNotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/CancelConflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "Customers may cancel their own confirmed appointments until 24 hours before start. The same endpoint permits an authorized administrator to cancel outside that customer cutoff; no admin-specific v1 endpoint exists.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AppointmentId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SupabaseSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sb-<project-ref>-auth-token",
+        "description": "A browser session cookie issued by the configured Supabase project. `<project-ref>` is derived from the deployment's Supabase URL, and Supabase may chunk the cookie. Clients should use the authenticated browser cookie jar; this v1 contract does not define bearer-token or Kravos authentication."
+      }
+    },
+    "parameters": {
+      "PetId": {
+        "name": "petId",
+        "in": "path",
+        "required": true,
+        "description": "Customer-owned pet UUID.",
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "AppointmentId": {
+        "name": "appointmentId",
+        "in": "path",
+        "required": true,
+        "description": "Customer-visible appointment UUID.",
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "description": "Opaque nonblank key, at most 255 characters. Reuse it only to retry the identical lifecycle request within its 24-hour retention window.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    "schemas": {
+      "Uuid": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+        "example": "00000000-0000-4000-8000-000000005001",
+        "description": "PostgreSQL UUID text (any RFC 4122 version, including deterministic seed IDs)."
+      },
+      "IsoTimestamp": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2028-09-04T13:00:00.000Z"
+      },
+      "BusinessDate": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "example": "2028-09-04"
+      },
+      "PetSize": {
+        "type": "string",
+        "enum": [
+          "SMALL",
+          "MEDIUM",
+          "LARGE"
+        ]
+      },
+      "ServiceKind": {
+        "type": "string",
+        "enum": [
+          "BASE",
+          "ADD_ON"
+        ]
+      },
+      "AppointmentStatus": {
+        "type": "string",
+        "enum": [
+          "CONFIRMED",
+          "CANCELLED",
+          "COMPLETED"
+        ]
+      },
+      "ValidationDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "path"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      },
+      "ErrorBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "details"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Stable machine-readable error code."
+          },
+          "message": {
+            "type": "string",
+            "description": "Safe user-facing explanation."
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationDetail"
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        }
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ErrorBody"
+              }
+            ],
+            "description": "`code` is `VALIDATION_ERROR`; `details` identifies invalid body, header, or path fields."
+          }
+        }
+      },
+      "Service": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "kind",
+          "isStandaloneEligible",
+          "durationMinutes",
+          "priceCents"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ServiceKind"
+          },
+          "isStandaloneEligible": {
+            "type": "boolean"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "priceCents": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "Groomer": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "displayName",
+          "bio"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "bio": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Pet": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "breed",
+          "size",
+          "ageYears",
+          "temperament",
+          "coatCondition",
+          "allergies",
+          "notes"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "breed": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "size": {
+            "$ref": "#/components/schemas/PetSize"
+          },
+          "ageYears": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30
+          },
+          "temperament": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "coatCondition": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "allergies": {
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          }
+        }
+      },
+      "CreatePetRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "breed",
+          "size",
+          "ageYears"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "breed": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "size": {
+            "$ref": "#/components/schemas/PetSize"
+          },
+          "ageYears": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30
+          },
+          "temperament": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "coatCondition": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "allergies": {
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          }
+        }
+      },
+      "UpdatePetRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "breed": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "size": {
+            "$ref": "#/components/schemas/PetSize"
+          },
+          "ageYears": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30
+          },
+          "temperament": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "coatCondition": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "allergies": {
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          }
+        }
+      },
+      "AvailabilitySearchRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "petId",
+          "selectedServiceIds",
+          "groomerId",
+          "startsOn",
+          "endsOn"
+        ],
+        "properties": {
+          "petId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "selectedServiceIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          "groomerId": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Uuid"
+              }
+            ],
+            "nullable": true,
+            "description": "Specific groomer UUID, or `null` for any qualified active groomer."
+          },
+          "startsOn": {
+            "$ref": "#/components/schemas/BusinessDate"
+          },
+          "endsOn": {
+            "$ref": "#/components/schemas/BusinessDate"
+          }
+        }
+      },
+      "AvailabilitySlot": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "groomerId",
+          "startsAt",
+          "serviceEndsAt",
+          "blockedUntil"
+        ],
+        "properties": {
+          "groomerId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "startsAt": {
+            "$ref": "#/components/schemas/IsoTimestamp"
+          },
+          "serviceEndsAt": {
+            "$ref": "#/components/schemas/IsoTimestamp"
+          },
+          "blockedUntil": {
+            "$ref": "#/components/schemas/IsoTimestamp"
+          }
+        }
+      },
+      "AvailabilityResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "timeZone",
+          "totalDurationMinutes",
+          "subtotalCents",
+          "slots"
+        ],
+        "properties": {
+          "timeZone": {
+            "type": "string",
+            "enum": [
+              "America/New_York"
+            ]
+          },
+          "totalDurationMinutes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "subtotalCents": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AvailabilitySlot"
+            }
+          }
+        }
+      },
+      "CreateAppointmentRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "petId",
+          "groomerId",
+          "selectedServiceIds",
+          "startsAt"
+        ],
+        "properties": {
+          "petId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "groomerId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "selectedServiceIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          "startsAt": {
+            "$ref": "#/components/schemas/IsoTimestamp",
+            "description": "Requested slot instant. The server derives all duration, buffer, and price fields."
+          }
+        }
+      },
+      "RescheduleAppointmentRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "groomerId",
+          "selectedServiceIds",
+          "startsAt"
+        ],
+        "properties": {
+          "groomerId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "selectedServiceIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          "startsAt": {
+            "$ref": "#/components/schemas/IsoTimestamp"
+          }
+        }
+      },
+      "Appointment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "petId",
+          "groomerId",
+          "status",
+          "startsAt",
+          "serviceEndsAt",
+          "blockedUntil",
+          "subtotalCents",
+          "appliedBufferMinutes",
+          "cancelledAt"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "petId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "groomerId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AppointmentStatus"
+          },
+          "startsAt": {
+            "$ref": "#/components/schemas/IsoTimestamp"
+          },
+          "serviceEndsAt": {
+            "$ref": "#/components/schemas/IsoTimestamp"
+          },
+          "blockedUntil": {
+            "$ref": "#/components/schemas/IsoTimestamp"
+          },
+          "subtotalCents": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "appliedBufferMinutes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "cancelledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "ServicesResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "services"
+            ],
+            "properties": {
+              "services": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Service"
+                }
+              }
+            }
+          }
+        }
+      },
+      "GroomersResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "groomers"
+            ],
+            "properties": {
+              "groomers": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Groomer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PetsResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "pets"
+            ],
+            "properties": {
+              "pets": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Pet"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PetResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Pet"
+          }
+        }
+      },
+      "DeletePetResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "deleted"
+            ],
+            "properties": {
+              "deleted": {
+                "type": "boolean",
+                "enum": [
+                  true
+                ]
+              }
+            }
+          }
+        }
+      },
+      "AvailabilityResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AvailabilityResult"
+          }
+        }
+      },
+      "AppointmentsResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "appointments"
+            ],
+            "properties": {
+              "appointments": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          }
+        }
+      },
+      "AppointmentResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Appointment"
+          }
+        }
+      },
+      "CreateAppointmentConflictErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message",
+              "details"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "SLOT_UNAVAILABLE",
+                  "IDEMPOTENCY_KEY_REUSED",
+                  "IDEMPOTENCY_KEY_EXPIRED",
+                  "IDEMPOTENCY_RECORD_INCOMPLETE"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {
+                "type": "array",
+                "maxItems": 0,
+                "items": {
+                  "$ref": "#/components/schemas/ValidationDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "RescheduleConflictErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message",
+              "details"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "SLOT_UNAVAILABLE",
+                  "IDEMPOTENCY_KEY_REUSED",
+                  "IDEMPOTENCY_KEY_EXPIRED",
+                  "IDEMPOTENCY_RECORD_INCOMPLETE",
+                  "APPOINTMENT_NOT_CHANGEABLE"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {
+                "type": "array",
+                "maxItems": 0,
+                "items": {
+                  "$ref": "#/components/schemas/ValidationDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "CancelConflictErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message",
+              "details"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "IDEMPOTENCY_KEY_REUSED",
+                  "IDEMPOTENCY_KEY_EXPIRED",
+                  "IDEMPOTENCY_RECORD_INCOMPLETE",
+                  "APPOINTMENT_NOT_CHANGEABLE"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {
+                "type": "array",
+                "maxItems": 0,
+                "items": {
+                  "$ref": "#/components/schemas/ValidationDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "AuthenticationRequired": {
+        "description": "No verified Supabase session or matching application profile was available.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "AUTHENTICATION_REQUIRED",
+                "message": "Authentication is required.",
+                "details": []
+              }
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "The JSON body, route UUID, or required lifecycle idempotency header is malformed.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ValidationErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "VALIDATION_ERROR",
+                "message": "Request validation failed.",
+                "details": [
+                  {
+                    "code": "invalid_format",
+                    "message": "Invalid UUID",
+                    "path": "petId"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "PetNotFound": {
+        "description": "The pet does not exist or is not owned by the current customer.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "PET_NOT_FOUND",
+                "message": "The selected pet was not found.",
+                "details": []
+              }
+            }
+          }
+        }
+      },
+      "AppointmentNotFound": {
+        "description": "The appointment does not exist or cannot be observed by the current actor.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "APPOINTMENT_NOT_FOUND",
+                "message": "The requested appointment was not found.",
+                "details": []
+              }
+            }
+          }
+        }
+      },
+      "LifecycleForbidden": {
+        "description": "The customer cutoff has passed for this lifecycle change.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "CANCELLATION_CUTOFF_PASSED",
+                "message": "This appointment can no longer be changed online.",
+                "details": []
+              }
+            }
+          }
+        }
+      },
+      "SlotUnavailable": {
+        "description": "The selected slot was taken after advisory availability search.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "SLOT_UNAVAILABLE",
+                "message": "This appointment time is no longer available.",
+                "details": []
+              }
+            }
+          }
+        }
+      },
+      "IdempotencyConflict": {
+        "description": "An idempotency key was reused for another request, expired, or did not complete safely.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "IDEMPOTENCY_KEY_REUSED",
+                "message": "This idempotency key was already used for a different request.",
+                "details": []
+              }
+            }
+          }
+        }
+      },
+      "AppointmentStateConflict": {
+        "description": "The appointment is no longer in a changeable state.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "APPOINTMENT_NOT_CHANGEABLE",
+                "message": "This appointment can no longer be changed.",
+                "details": []
+              }
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "An unexpected internal failure was redacted.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "An unexpected error occurred.",
+                "details": []
+              }
+            }
+          }
+        }
+      },
+      "ServicesSuccess": {
+        "description": "Active services.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ServicesResponse"
+            },
+            "example": {
+              "data": {
+                "services": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000005004",
+                    "name": "Bath & Brush",
+                    "description": "Bath, drying, brush-out, and light tidy.",
+                    "kind": "BASE",
+                    "isStandaloneEligible": false,
+                    "durationMinutes": 60,
+                    "priceCents": 5500
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "GroomersSuccess": {
+        "description": "Active groomers.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/GroomersResponse"
+            },
+            "example": {
+              "data": {
+                "groomers": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000005003",
+                    "displayName": "Maya Chen",
+                    "bio": "Senior groomer with broad service availability."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "PetsSuccess": {
+        "description": "Pets owned by the current customer.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PetsResponse"
+            },
+            "example": {
+              "data": {
+                "pets": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000005002",
+                    "name": "Milo",
+                    "breed": "Golden Retriever",
+                    "size": "LARGE",
+                    "ageYears": 4,
+                    "temperament": null,
+                    "coatCondition": null,
+                    "allergies": null,
+                    "notes": null
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "PetCreated": {
+        "description": "Customer-owned pet created.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PetResponse"
+            },
+            "example": {
+              "data": {
+                "id": "00000000-0000-4000-8000-000000005002",
+                "name": "Milo",
+                "breed": "Golden Retriever",
+                "size": "LARGE",
+                "ageYears": 4,
+                "temperament": null,
+                "coatCondition": null,
+                "allergies": null,
+                "notes": null
+              }
+            }
+          }
+        }
+      },
+      "PetSuccess": {
+        "description": "Customer-owned pet.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PetResponse"
+            },
+            "example": {
+              "data": {
+                "id": "00000000-0000-4000-8000-000000005002",
+                "name": "Milo",
+                "breed": "Golden Retriever",
+                "size": "LARGE",
+                "ageYears": 4,
+                "temperament": null,
+                "coatCondition": null,
+                "allergies": null,
+                "notes": null
+              }
+            }
+          }
+        }
+      },
+      "PetDeleted": {
+        "description": "Customer-owned pet deleted.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DeletePetResponse"
+            },
+            "example": {
+              "data": {
+                "deleted": true
+              }
+            }
+          }
+        }
+      },
+      "AvailabilitySuccess": {
+        "description": "Server-calculated available slots and derived totals.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AvailabilityResponse"
+            },
+            "example": {
+              "data": {
+                "timeZone": "America/New_York",
+                "totalDurationMinutes": 60,
+                "subtotalCents": 5500,
+                "slots": [
+                  {
+                    "groomerId": "00000000-0000-4000-8000-000000005003",
+                    "startsAt": "2028-09-04T13:00:00.000Z",
+                    "serviceEndsAt": "2028-09-04T14:00:00.000Z",
+                    "blockedUntil": "2028-09-04T14:15:00.000Z"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "AppointmentsSuccess": {
+        "description": "Appointments visible to the authenticated customer.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AppointmentsResponse"
+            },
+            "example": {
+              "data": {
+                "appointments": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000005005",
+                    "petId": "00000000-0000-4000-8000-000000005002",
+                    "groomerId": "00000000-0000-4000-8000-000000005003",
+                    "status": "CONFIRMED",
+                    "startsAt": "2028-09-04T13:00:00.000Z",
+                    "serviceEndsAt": "2028-09-04T14:00:00.000Z",
+                    "blockedUntil": "2028-09-04T14:15:00.000Z",
+                    "subtotalCents": 5500,
+                    "appliedBufferMinutes": 15,
+                    "cancelledAt": null
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "AppointmentCreated": {
+        "description": "Confirmed appointment with server-derived timing and price.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AppointmentResponse"
+            },
+            "example": {
+              "data": {
+                "id": "00000000-0000-4000-8000-000000005005",
+                "petId": "00000000-0000-4000-8000-000000005002",
+                "groomerId": "00000000-0000-4000-8000-000000005003",
+                "status": "CONFIRMED",
+                "startsAt": "2028-09-04T13:00:00.000Z",
+                "serviceEndsAt": "2028-09-04T14:00:00.000Z",
+                "blockedUntil": "2028-09-04T14:15:00.000Z",
+                "subtotalCents": 5500,
+                "appliedBufferMinutes": 15,
+                "cancelledAt": null
+              }
+            }
+          }
+        }
+      },
+      "AppointmentSuccess": {
+        "description": "Updated appointment.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AppointmentResponse"
+            },
+            "example": {
+              "data": {
+                "id": "00000000-0000-4000-8000-000000005005",
+                "petId": "00000000-0000-4000-8000-000000005002",
+                "groomerId": "00000000-0000-4000-8000-000000005003",
+                "status": "CONFIRMED",
+                "startsAt": "2028-09-04T13:00:00.000Z",
+                "serviceEndsAt": "2028-09-04T14:00:00.000Z",
+                "blockedUntil": "2028-09-04T14:15:00.000Z",
+                "subtotalCents": 5500,
+                "appliedBufferMinutes": 15,
+                "cancelledAt": null
+              }
+            }
+          }
+        }
+      },
+      "CreateAppointmentConflict": {
+        "description": "The slot became unavailable or the lifecycle idempotency key conflicts with the current request.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CreateAppointmentConflictErrorResponse"
+            },
+            "examples": {
+              "slotUnavailable": {
+                "summary": "Stale slot",
+                "value": {
+                  "error": {
+                    "code": "SLOT_UNAVAILABLE",
+                    "message": "This appointment time is no longer available.",
+                    "details": []
+                  }
+                }
+              },
+              "idempotencyKeyReused": {
+                "summary": "Different request reused a key",
+                "value": {
+                  "error": {
+                    "code": "IDEMPOTENCY_KEY_REUSED",
+                    "message": "This idempotency key was already used for a different request.",
+                    "details": []
+                  }
+                }
+              },
+              "idempotencyKeyExpired": {
+                "summary": "Retry window elapsed",
+                "value": {
+                  "error": {
+                    "code": "IDEMPOTENCY_KEY_EXPIRED",
+                    "message": "This idempotency key has expired and cannot be retried.",
+                    "details": []
+                  }
+                }
+              },
+              "idempotencyRecordIncomplete": {
+                "summary": "Prior attempt incomplete",
+                "value": {
+                  "error": {
+                    "code": "IDEMPOTENCY_RECORD_INCOMPLETE",
+                    "message": "This idempotency request did not complete safely. Retry with a new key.",
+                    "details": []
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "RescheduleConflict": {
+        "description": "The appointment is no longer changeable, the requested slot became unavailable, or the idempotency key conflicts.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RescheduleConflictErrorResponse"
+            },
+            "examples": {
+              "slotUnavailable": {
+                "summary": "Stale slot",
+                "value": {
+                  "error": {
+                    "code": "SLOT_UNAVAILABLE",
+                    "message": "This appointment time is no longer available.",
+                    "details": []
+                  }
+                }
+              },
+              "appointmentNotChangeable": {
+                "summary": "Status cannot transition",
+                "value": {
+                  "error": {
+                    "code": "APPOINTMENT_NOT_CHANGEABLE",
+                    "message": "This appointment can no longer be changed.",
+                    "details": []
+                  }
+                }
+              },
+              "idempotencyKeyReused": {
+                "summary": "Different request reused a key",
+                "value": {
+                  "error": {
+                    "code": "IDEMPOTENCY_KEY_REUSED",
+                    "message": "This idempotency key was already used for a different request.",
+                    "details": []
+                  }
+                }
+              },
+              "idempotencyKeyExpired": {
+                "summary": "Retry window elapsed",
+                "value": {
+                  "error": {
+                    "code": "IDEMPOTENCY_KEY_EXPIRED",
+                    "message": "This idempotency key has expired and cannot be retried.",
+                    "details": []
+                  }
+                }
+              },
+              "idempotencyRecordIncomplete": {
+                "summary": "Prior attempt incomplete",
+                "value": {
+                  "error": {
+                    "code": "IDEMPOTENCY_RECORD_INCOMPLETE",
+                    "message": "This idempotency request did not complete safely. Retry with a new key.",
+                    "details": []
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "CancelConflict": {
+        "description": "The appointment is no longer changeable or the idempotency key conflicts.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CancelConflictErrorResponse"
+            },
+            "examples": {
+              "appointmentNotChangeable": {
+                "summary": "Status cannot transition",
+                "value": {
+                  "error": {
+                    "code": "APPOINTMENT_NOT_CHANGEABLE",
+                    "message": "This appointment can no longer be changed.",
+                    "details": []
+                  }
+                }
+              },
+              "idempotencyKeyReused": {
+                "summary": "Different request reused a key",
+                "value": {
+                  "error": {
+                    "code": "IDEMPOTENCY_KEY_REUSED",
+                    "message": "This idempotency key was already used for a different request.",
+                    "details": []
+                  }
+                }
+              },
+              "idempotencyKeyExpired": {
+                "summary": "Retry window elapsed",
+                "value": {
+                  "error": {
+                    "code": "IDEMPOTENCY_KEY_EXPIRED",
+                    "message": "This idempotency key has expired and cannot be retried.",
+                    "details": []
+                  }
+                }
+              },
+              "idempotencyRecordIncomplete": {
+                "summary": "Prior attempt incomplete",
+                "value": {
+                  "error": {
+                    "code": "IDEMPOTENCY_RECORD_INCOMPLETE",
+                    "message": "This idempotency request did not complete safely. Retry with a new key.",
+                    "details": []
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
