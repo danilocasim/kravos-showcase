@@ -245,9 +245,7 @@
               },
               "example": {
                 "petId": "00000000-0000-4000-8000-000000005002",
-                "selectedServiceIds": [
-                  "00000000-0000-4000-8000-000000005004"
-                ],
+                "selectedServiceIds": ["00000000-0000-4000-8000-000000005004"],
                 "groomerId": "00000000-0000-4000-8000-000000005003",
                 "startsOn": "2028-09-04",
                 "endsOn": "2028-09-04"
@@ -317,9 +315,7 @@
               "example": {
                 "petId": "00000000-0000-4000-8000-000000005002",
                 "groomerId": "00000000-0000-4000-8000-000000005003",
-                "selectedServiceIds": [
-                  "00000000-0000-4000-8000-000000005004"
-                ],
+                "selectedServiceIds": ["00000000-0000-4000-8000-000000005004"],
                 "startsAt": "2028-09-04T13:00:00.000Z"
               }
             }
@@ -373,9 +369,7 @@
               },
               "example": {
                 "groomerId": "00000000-0000-4000-8000-000000005003",
-                "selectedServiceIds": [
-                  "00000000-0000-4000-8000-000000005004"
-                ],
+                "selectedServiceIds": ["00000000-0000-4000-8000-000000005004"],
                 "startsAt": "2028-09-04T15:00:00.000Z"
               }
             }
@@ -494,35 +488,20 @@
       },
       "PetSize": {
         "type": "string",
-        "enum": [
-          "SMALL",
-          "MEDIUM",
-          "LARGE"
-        ]
+        "enum": ["SMALL", "MEDIUM", "LARGE"]
       },
       "ServiceKind": {
         "type": "string",
-        "enum": [
-          "BASE",
-          "ADD_ON"
-        ]
+        "enum": ["BASE", "ADD_ON"]
       },
       "AppointmentStatus": {
         "type": "string",
-        "enum": [
-          "CONFIRMED",
-          "CANCELLED",
-          "COMPLETED"
-        ]
+        "enum": ["CONFIRMED", "CANCELLED", "COMPLETED"]
       },
       "ValidationDetail": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "code",
-          "message",
-          "path"
-        ],
+        "required": ["code", "message", "path"],
         "properties": {
           "code": {
             "type": "string"
@@ -538,11 +517,7 @@
       "ErrorBody": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "code",
-          "message",
-          "details"
-        ],
+        "required": ["code", "message", "details"],
         "properties": {
           "code": {
             "type": "string",
@@ -563,9 +538,7 @@
       "ErrorResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "error"
-        ],
+        "required": ["error"],
         "properties": {
           "error": {
             "$ref": "#/components/schemas/ErrorBody"
@@ -575,9 +548,7 @@
       "ValidationErrorResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "error"
-        ],
+        "required": ["error"],
         "properties": {
           "error": {
             "allOf": [
@@ -630,11 +601,7 @@
       "Groomer": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "id",
-          "displayName",
-          "bio"
-        ],
+        "required": ["id", "displayName", "bio"],
         "properties": {
           "id": {
             "$ref": "#/components/schemas/Uuid"
@@ -709,12 +676,7 @@
       "CreatePetRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "name",
-          "breed",
-          "size",
-          "ageYears"
-        ],
+        "required": ["name", "breed", "size", "ageYears"],
         "properties": {
           "name": {
             "type": "string",
@@ -843,12 +805,7 @@
       "AvailabilitySlot": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "groomerId",
-          "startsAt",
-          "serviceEndsAt",
-          "blockedUntil"
-        ],
+        "required": ["groomerId", "startsAt", "serviceEndsAt", "blockedUntil"],
         "properties": {
           "groomerId": {
             "$ref": "#/components/schemas/Uuid"
@@ -876,9 +833,7 @@
         "properties": {
           "timeZone": {
             "type": "string",
-            "enum": [
-              "America/New_York"
-            ]
+            "enum": ["America/New_York"]
           },
           "totalDurationMinutes": {
             "type": "integer",
@@ -899,12 +854,7 @@
       "CreateAppointmentRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "petId",
-          "groomerId",
-          "selectedServiceIds",
-          "startsAt"
-        ],
+        "required": ["petId", "groomerId", "selectedServiceIds", "startsAt"],
         "properties": {
           "petId": {
             "$ref": "#/components/schemas/Uuid"
@@ -929,11 +879,7 @@
       "RescheduleAppointmentRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "groomerId",
-          "selectedServiceIds",
-          "startsAt"
-        ],
+        "required": ["groomerId", "selectedServiceIds", "startsAt"],
         "properties": {
           "groomerId": {
             "$ref": "#/components/schemas/Uuid"
@@ -1006,16 +952,12 @@
       "ServicesResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "properties": {
           "data": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "services"
-            ],
+            "required": ["services"],
             "properties": {
               "services": {
                 "type": "array",
@@ -1030,16 +972,12 @@
       "GroomersResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "properties": {
           "data": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "groomers"
-            ],
+            "required": ["groomers"],
             "properties": {
               "groomers": {
                 "type": "array",
@@ -1054,16 +992,12 @@
       "PetsResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "properties": {
           "data": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "pets"
-            ],
+            "required": ["pets"],
             "properties": {
               "pets": {
                 "type": "array",
@@ -1078,9 +1012,7 @@
       "PetResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "properties": {
           "data": {
             "$ref": "#/components/schemas/Pet"
@@ -1090,22 +1022,16 @@
       "DeletePetResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "properties": {
           "data": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "deleted"
-            ],
+            "required": ["deleted"],
             "properties": {
               "deleted": {
                 "type": "boolean",
-                "enum": [
-                  true
-                ]
+                "enum": [true]
               }
             }
           }
@@ -1114,9 +1040,7 @@
       "AvailabilityResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "properties": {
           "data": {
             "$ref": "#/components/schemas/AvailabilityResult"
@@ -1126,16 +1050,12 @@
       "AppointmentsResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "properties": {
           "data": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "appointments"
-            ],
+            "required": ["appointments"],
             "properties": {
               "appointments": {
                 "type": "array",
@@ -1150,9 +1070,7 @@
       "AppointmentResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "properties": {
           "data": {
             "$ref": "#/components/schemas/Appointment"
@@ -1162,18 +1080,12 @@
       "CreateAppointmentConflictErrorResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "error"
-        ],
+        "required": ["error"],
         "properties": {
           "error": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "code",
-              "message",
-              "details"
-            ],
+            "required": ["code", "message", "details"],
             "properties": {
               "code": {
                 "type": "string",
@@ -1201,18 +1113,12 @@
       "RescheduleConflictErrorResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "error"
-        ],
+        "required": ["error"],
         "properties": {
           "error": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "code",
-              "message",
-              "details"
-            ],
+            "required": ["code", "message", "details"],
             "properties": {
               "code": {
                 "type": "string",
@@ -1241,18 +1147,12 @@
       "CancelConflictErrorResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "error"
-        ],
+        "required": ["error"],
         "properties": {
           "error": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "code",
-              "message",
-              "details"
-            ],
+            "required": ["code", "message", "details"],
             "properties": {
               "code": {
                 "type": "string",

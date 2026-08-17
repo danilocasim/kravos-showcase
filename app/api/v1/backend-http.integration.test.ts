@@ -297,7 +297,8 @@ const createSeededRepository = (): BookingRepository => {
     },
     listAppointmentsByCustomer: async (customerId) =>
       appointments.filter((appointment) => appointment.customerId === customerId),
-    listPetsByOwner: async (ownerId) => pets.filter((pet) => pet.ownerId === ownerId),
+    listAppointmentServices: async () => [],
+  listPetsByOwner: async (ownerId) => pets.filter((pet) => pet.ownerId === ownerId),
     getPetByOwner: async (id, ownerId) =>
       pets.find((pet) => pet.id === id && pet.ownerId === ownerId) ?? null,
     createPet: async (input: CreatePetRecord) => {

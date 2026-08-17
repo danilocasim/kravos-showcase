@@ -283,6 +283,30 @@ describe("createSupabaseBookingRepository", () => {
     });
   });
 
+  it("reports a pet that still has appointments as PET_IN_USE", async () => {
+    const repository = createSupabaseBookingRepository(
+      createClient("https://example.supabase.co", "sb_publishable_test_key", {
+        global: {
+          fetch: async () =>
+            response(
+              {
+                code: "23503",
+                message: "update or delete on table pets violates foreign key constraint",
+              },
+              409,
+            ),
+        },
+      }),
+    );
+
+    await expect(
+      repository.deletePetByOwner(petId, customerId),
+    ).rejects.toMatchObject({
+      code: "PET_IN_USE",
+      status: 409,
+    });
+  });
+
   it("fails closed when Supabase reports a database error", async () => {
     const repository = createSupabaseBookingRepository(
       createClient("https://example.supabase.co", "sb_publishable_test_key", {

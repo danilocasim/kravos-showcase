@@ -1,0 +1,48 @@
+<!-- @dsCard group="Components" viewport="700x340" name="Core" subtitle="Buttons, icon buttons, badges, status pills, alerts" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{background:var(--bg-page);padding:20px;font:var(--type-body)}.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.stack{display:flex;flex-direction:column;gap:12px}.lbl{font:var(--type-overline);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--text-subtle);margin-bottom:8px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}</style></head><body><div id="root"></div>
+<script type="text/babel">
+const { Button, IconButton, Badge, StatusPill, Alert, Card, EmptyState, Logotype } = window.PawAmpPolishDesignSystem_25f2e9;
+function Demo(){return (
+  <div className="stack" style={{gap:20}}>
+    <div><div className="lbl">Buttons</div><div className="row">
+      <Button variant="primary">Continue</Button>
+      <Button variant="accent" iconRight="check">Confirm appointment</Button>
+      <Button variant="secondary" iconLeft="chevron-left">Back</Button>
+      <Button variant="ghost">Skip</Button>
+      <Button variant="danger">Cancel visit</Button>
+      <Button variant="link">View policy</Button>
+      <Button disabled>Disabled</Button>
+      <Button loading>Booking…</Button>
+      <Button size="sm">Small</Button>
+      <IconButton icon="pencil" label="Edit" variant="outline" />
+      <IconButton icon="trash-2" label="Delete" variant="danger" />
+    </div></div>
+    <div className="grid2">
+      <div><div className="lbl">Badges</div><div className="row">
+        <Badge icon="clock">60 min</Badge><Badge tone="accent">Add-on</Badge>
+        <Badge tone="primary" icon="badge-check">All services</Badge><Badge tone="warning" icon="triangle-alert">Allergy</Badge>
+      </div></div>
+      <div><div className="lbl">Status</div><div className="row">
+        <StatusPill status="CONFIRMED" /><StatusPill status="COMPLETED" /><StatusPill status="CANCELLED" />
+      </div></div>
+    </div>
+    <div><div className="lbl">Alert</div>
+      <Alert tone="danger" title="That time was just booked" code="SLOT_UNAVAILABLE"
+        action={<Button size="sm" variant="secondary" iconLeft="refresh-cw">See new times</Button>}>
+        We kept your pet and services. Pick another time to finish booking.
+      </Alert>
+    </div>
+    <div className="row" style={{gap:20}}>
+      <Logotype size="md" />
+      <Card padding="sm" tone="primarySoft" style={{font:'var(--type-small)'}}>Card · primarySoft</Card>
+      <Card padding="sm" tone="sunken" style={{font:'var(--type-small)'}}>Card · sunken</Card>
+    </div>
+  </div>);}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script></body></html>

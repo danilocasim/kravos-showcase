@@ -373,8 +373,8 @@ select pg_temp.assert_task3_row_count(
     set status = 'COMPLETED', completed_at = now()
     where id = '00000000-0000-0000-0000-000000000232'
   $sql$,
-  1,
-  'Admin can update another customer appointment'
+  0,
+  'Admin cannot bypass guarded appointment lifecycle functions'
 );
 
 reset role;

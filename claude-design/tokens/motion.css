@@ -1,0 +1,18 @@
+/* Motion is quick and unfussy: short fades and 1–2px lifts. Nothing bounces,
+   nothing slides across the screen. */
+:root {
+  --duration-instant: 90ms; /* @kind other */
+  --duration-fast: 140ms; /* @kind other */
+  --duration-base: 200ms; /* @kind other */
+  --duration-slow: 320ms; /* @kind other */
+
+  --ease-standard: cubic-bezier(0.2, 0, 0.2, 1); /* @kind other */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* @kind other */
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1); /* @kind other */
+
+  --transition-control: background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}

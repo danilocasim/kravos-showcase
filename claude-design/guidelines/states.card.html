@@ -1,0 +1,12 @@
+<!-- @dsCard group="Brand" viewport="700x170" name="Interaction states" subtitle="Hover darkens, press nudges 1px down, focus is a 3px spruce ring" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>body{padding:16px;background:var(--surface-card)}.sw{display:flex;gap:0;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-subtle)}.sw>div{flex:1;height:64px;display:flex;align-items:flex-end;padding:6px;font:var(--type-overline);letter-spacing:var(--tracking-wide)}.legend{display:flex;gap:0;margin-top:6px}.legend>span{flex:1;font:var(--type-caption);color:var(--text-subtle);padding-left:6px}
+.tiles{display:flex;gap:10px;flex-wrap:wrap}.tile{border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:10px 12px;min-width:118px}.tile b{display:block;font:var(--type-caption);color:var(--text-muted);font-weight:var(--weight-medium)}.tile i{display:block;font:var(--type-mono);font-size:var(--text-2xs);color:var(--text-subtle);font-style:normal;margin-top:2px}
+</style></head><body><div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+<div style="height:40px;padding:0 16px;display:grid;place-items:center;border-radius:var(--radius-control);background:var(--action-primary);color:#fff;font:var(--type-body-strong)">Default</div>
+<div style="height:40px;padding:0 16px;display:grid;place-items:center;border-radius:var(--radius-control);background:var(--action-primary-hover);color:#fff;font:var(--type-body-strong)">Hover</div>
+<div style="height:40px;padding:0 16px;display:grid;place-items:center;border-radius:var(--radius-control);background:var(--action-primary-active);color:#fff;font:var(--type-body-strong);transform:translateY(1px)">Pressed</div>
+<div style="height:40px;padding:0 16px;display:grid;place-items:center;border-radius:var(--radius-control);background:var(--action-primary);color:#fff;font:var(--type-body-strong);box-shadow:var(--focus-ring)">Focused</div>
+<div style="height:40px;padding:0 16px;display:grid;place-items:center;border-radius:var(--radius-control);background:var(--action-disabled-bg);color:var(--action-disabled-text);font:var(--type-body-strong)">Disabled</div>
+</div>
+<div style="font:var(--type-caption);color:var(--text-subtle);margin-top:12px;font-family:var(--font-mono)">140ms · cubic-bezier(.2,0,.2,1) · no bounce, no scale</div></body></html>

@@ -12,6 +12,12 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/browser-outputs/
+
+# local agent settings
+/.claude/settings.local.json
 
 # next.js
 /.next/
@@ -39,6 +45,7 @@ yarn-error.log*
 
 # Supabase CLI runtime metadata
 supabase/.temp/
+supabase/.branches/
 
 # typescript
 *.tsbuildinfo

@@ -10,11 +10,13 @@ import {
   AppointmentStateError,
   AppointmentUnavailableError,
   IdempotencyKeyError,
+  PetInUseError,
   PetUnavailableError,
   SlotUnavailableError,
 } from "./use-cases";
 import type {
   Appointment,
+  AppointmentServiceSnapshot,
   BookingRepository,
   ConfirmedAppointmentBlock,
   CreateAppointmentInput,
@@ -92,6 +94,15 @@ const appointmentSchema = z.object({
   subtotal_cents: z.number().int(),
   applied_buffer_minutes: z.number().int(),
   cancelled_at: z.string().datetime({ offset: true }).nullable(),
+});
+
+const appointmentServiceSchema = z.object({
+  appointment_id: z.guid(),
+  service_id: z.guid(),
+  service_name: z.string(),
+  service_kind: z.enum(["BASE", "ADD_ON"]),
+  duration_minutes: z.number().int(),
+  price_cents: z.number().int(),
 });
 
 const petSchema = z.object({
@@ -205,6 +216,17 @@ const toAppointment = (row: z.infer<typeof appointmentSchema>): Appointment => (
   cancelledAt: row.cancelled_at === null ? null : new Date(row.cancelled_at),
 });
 
+const toAppointmentService = (
+  row: z.infer<typeof appointmentServiceSchema>,
+): AppointmentServiceSnapshot => ({
+  appointmentId: row.appointment_id,
+  serviceId: row.service_id,
+  serviceName: row.service_name,
+  serviceKind: row.service_kind,
+  durationMinutes: row.duration_minutes,
+  priceCents: row.price_cents,
+});
+
 const toPet = (row: z.infer<typeof petSchema>): Pet => ({
   id: row.id,
   ownerId: row.owner_id,
@@ -229,6 +251,16 @@ const toPetInsert = (input: CreatePetRecord) => ({
   allergies: input.allergies,
   notes: input.notes,
 });
+
+const databaseErrorCodeSchema = z.object({ code: z.string() });
+
+const translatePetDeleteError = (error: unknown): Error => {
+  const parsed = databaseErrorCodeSchema.safeParse(error);
+
+  return parsed.success && parsed.data.code === "23503"
+    ? new PetInUseError()
+    : databaseOperationError(error);
+};
 
 const lifecycleErrorSchema = z.object({ message: z.string() });
 
@@ -397,10 +429,13 @@ export const createSupabaseBookingRepository = (
     return toAppointment(parseRows(data, null, z.array(appointmentSchema).length(1))[0]!);
   },
   cancelConfirmedAppointment: async (input) => {
-    const { data, error } = await supabase.rpc("cancel_confirmed_appointment", {
-      requested_appointment_id: input.appointmentId,
-      requested_idempotency_key: input.idempotencyKey,
-    });
+    const { data, error } = await supabase.rpc(
+      "cancel_confirmed_appointment",
+      {
+        requested_appointment_id: input.appointmentId,
+        requested_idempotency_key: input.idempotencyKey,
+      },
+    );
 
     if (error !== null) {
       throw translateLifecycleError(error);
@@ -418,6 +453,21 @@ export const createSupabaseBookingRepository = (
       .order("starts_at", { ascending: false });
 
     return parseRows(data, error, z.array(appointmentSchema)).map(toAppointment);
+  },
+  listAppointmentServices: async (appointmentIds) => {
+    if (appointmentIds.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from("appointment_services")
+      .select(
+        "appointment_id, service_id, service_name, service_kind, duration_minutes, price_cents",
+      )
+      .in("appointment_id", [...appointmentIds])
+      .order("created_at");
+
+    return parseRows(data, error, z.array(appointmentServiceSchema)).map(
+      toAppointmentService,
+    );
   },
   listPetsByOwner: async (ownerId) => {
     const { data, error } = await supabase
@@ -490,7 +540,7 @@ export const createSupabaseBookingRepository = (
       .maybeSingle();
 
     if (error !== null) {
-      throw databaseOperationError(error);
+      throw translatePetDeleteError(error);
     }
 
     // An owner-scoped delete returns the deleted row; RLS or a missing pet yields null.

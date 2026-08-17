@@ -15,9 +15,10 @@ import { createBookingUseCases } from "./use-cases";
 export const createSupabaseBookingUseCases = async () => {
   const supabase = await createSupabaseServerClient();
   const authDependencies = createSupabaseAuthDependencies();
+  const actor = requireAuthenticatedActor(authDependencies);
 
   return createBookingUseCases({
     repository: createSupabaseBookingRepository(supabase),
-    getCurrentActor: () => requireAuthenticatedActor(authDependencies),
+    getCurrentActor: () => actor,
   });
 };

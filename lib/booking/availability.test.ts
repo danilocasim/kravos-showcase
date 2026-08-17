@@ -167,6 +167,7 @@ const createRepository = (
     throw new Error("not needed");
   },
   listAppointmentsByCustomer: async () => [],
+  listAppointmentServices: async () => [],
   listPetsByOwner: async (ownerId) =>
     [ownedPet, otherPet].filter((pet) => pet.ownerId === ownerId),
   getPetByOwner: async (petId, ownerId) =>

@@ -4,11 +4,13 @@ import { fromZonedTime } from "date-fns-tz";
 import { z } from "zod";
 
 import type { AuthenticatedActor } from "../auth/guards";
-
-const businessTimeZone = "America/New_York";
-const cleanupBufferMinutes = 15;
-const slotIntervalMinutes = 15;
-const maximumAvailabilitySearchDays = 31;
+import {
+  businessTimeZone,
+  cleanupBufferMinutes,
+  maximumAvailabilitySearchDays,
+  slotIntervalMinutes,
+} from "./business-time";
+import { createPetSchema, updatePetSchema } from "./pet-schema";
 
 /** A booking service exposed to the customer-facing catalogue. */
 export interface Service {
@@ -129,6 +131,16 @@ export interface Appointment {
   readonly cancelledAt: Date | null;
 }
 
+/** Immutable service detail captured when an appointment was confirmed. */
+export interface AppointmentServiceSnapshot {
+  readonly appointmentId: string;
+  readonly serviceId: string;
+  readonly serviceName: string;
+  readonly serviceKind: "BASE" | "ADD_ON";
+  readonly durationMinutes: number;
+  readonly priceCents: number;
+}
+
 /** Customer-controlled inputs for a confirmed appointment create. */
 export interface CreateAppointmentInput {
   readonly petId: string;
@@ -217,6 +229,9 @@ export interface BookingRepository {
   readonly listAppointmentsByCustomer: (
     customerId: string,
   ) => Promise<ReadonlyArray<Appointment>>;
+  readonly listAppointmentServices: (
+    appointmentIds: ReadonlyArray<string>,
+  ) => Promise<ReadonlyArray<AppointmentServiceSnapshot>>;
   readonly listPetsByOwner: (ownerId: string) => Promise<ReadonlyArray<Pet>>;
   readonly getPetByOwner: (
     petId: string,
@@ -317,6 +332,17 @@ export class PetUnavailableError extends Error {
   public constructor() {
     super("The selected pet was not found.");
     this.name = "PetUnavailableError";
+  }
+}
+
+/** A pet with appointment history must be retained for audit continuity. */
+export class PetInUseError extends Error {
+  public readonly code = "PET_IN_USE";
+  public readonly status = 409;
+
+  public constructor() {
+    super("A pet with appointment history cannot be deleted.");
+    this.name = "PetInUseError";
   }
 }
 
@@ -552,31 +578,6 @@ const firstSlotBoundaryAtOrAfter = (instant: Date): Date => {
   return new Date(rounded);
 };
 
-const optionalPetText = (maximumLength: number) =>
-  z
-    .string()
-    .trim()
-    .max(maximumLength)
-    .transform((value) => (value === "" ? null : value))
-    .nullable()
-    .optional();
-
-const petFields = {
-  name: z.string().trim().min(1).max(80),
-  breed: z.string().trim().min(1).max(100),
-  size: z.enum(["SMALL", "MEDIUM", "LARGE"]),
-  ageYears: z.number().int().min(0).max(30),
-  temperament: optionalPetText(500),
-  coatCondition: optionalPetText(500),
-  allergies: optionalPetText(2_000),
-  notes: optionalPetText(2_000),
-};
-
-const createPetSchema = z.object(petFields).strict();
-const updatePetSchema = z.object(petFields).partial().strict().refine(
-  (input) => Object.keys(input).length > 0,
-);
-
 const normalizeCreatePet = (input: unknown, ownerId: string): CreatePetRecord => {
   const parsed = createPetSchema.safeParse(input);
 
@@ -694,6 +695,10 @@ export const createBookingUseCases = ({
 
     return services.filter((service) => service.isActive);
   };
+
+  const listServiceCompatibility = async (): Promise<
+    ReadonlyArray<ServiceCompatibility>
+  > => repository.listServiceCompatibility();
 
   const resolveServiceSelection = async (
     selectedServiceIds: ReadonlyArray<string>,
@@ -1001,6 +1006,25 @@ export const createBookingUseCases = ({
     return appointments.filter((appointment) => appointment.customerId === actor.id);
   };
 
+  const listMyAppointmentServices = async (): Promise<
+    ReadonlyArray<AppointmentServiceSnapshot>
+  > => {
+    const actor = await getCurrentActor();
+    const appointments = await repository.listAppointmentsByCustomer(actor.id);
+    const ownedAppointmentIds = new Set(
+      appointments
+        .filter((appointment) => appointment.customerId === actor.id)
+        .map((appointment) => appointment.id),
+    );
+    const snapshots = await repository.listAppointmentServices([
+      ...ownedAppointmentIds,
+    ]);
+
+    return snapshots.filter((snapshot) =>
+      ownedAppointmentIds.has(snapshot.appointmentId),
+    );
+  };
+
   const listMyPets = async (): Promise<ReadonlyArray<Pet>> => {
     const actor = await getCurrentActor();
     const pets = await repository.listPetsByOwner(actor.id);
@@ -1048,6 +1072,7 @@ export const createBookingUseCases = ({
 
   return {
     listActiveServices,
+    listServiceCompatibility,
     resolveServiceSelection,
     listActiveGroomers,
     listQualifiedGroomers,
@@ -1057,6 +1082,7 @@ export const createBookingUseCases = ({
     cancelAppointment,
     getGroomerSchedule,
     listMyAppointments,
+    listMyAppointmentServices,
     listMyPets,
     getMyPet,
     createMyPet,

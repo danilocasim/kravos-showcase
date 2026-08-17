@@ -4,16 +4,16 @@
 
 ## 1. Business profile
 
-| Setting | Proposed value |
-| --- | --- |
-| Brand | Paw & Polish |
-| Type | Single-location pet-grooming salon |
-| Display location | Brooklyn, New York |
-| Business timezone | `America/New_York` |
-| Booking access | Authenticated customer account required |
-| Supported pets | Dogs only in v1 |
-| Currency | USD |
-| Tax/payment | Out of scope; display the service subtotal only |
+| Setting           | Proposed value                                  |
+| ----------------- | ----------------------------------------------- |
+| Brand             | Paw & Polish                                    |
+| Type              | Single-location pet-grooming salon              |
+| Display location  | Brooklyn, New York                              |
+| Business timezone | `America/New_York`                              |
+| Booking access    | Authenticated customer account required         |
+| Supported pets    | Dogs only in v1                                 |
+| Currency          | USD                                             |
+| Tax/payment       | Out of scope; display the service subtotal only |
 
 All database timestamps are UTC `timestamptz`. Convert to `America/New_York` only for customer/admin input and display.
 
@@ -21,11 +21,11 @@ All database timestamps are UTC `timestamptz`. Convert to `America/New_York` onl
 
 ### Weekly working hours
 
-| Day | Hours |
-| --- | --- |
+| Day           | Hours       |
+| ------------- | ----------- |
 | Monday–Friday | 09:00–18:00 |
-| Saturday | 09:00–16:00 |
-| Sunday | Closed |
+| Saturday      | 09:00–16:00 |
+| Sunday        | Closed      |
 
 ### Rules that the server enforces
 
@@ -57,18 +57,18 @@ Customers may choose **one base service and zero or more compatible add-ons**. A
 
 ### Base services
 
-| Service | Duration | Subtotal | Description |
-| --- | ---: | ---: | --- |
-| Bath & Brush | 60 min | $55 | Bath, drying, brush-out, and light tidy. |
-| Full Groom | 90 min | $85 | Bath, drying, haircut, brush-out, and nail trim. |
-| Puppy Introduction Groom | 45 min | $45 | Gentle first grooming visit for puppies up to 12 months. |
+| Service                  | Duration | Subtotal | Description                                              |
+| ------------------------ | -------: | -------: | -------------------------------------------------------- |
+| Bath & Brush             |   60 min |      $55 | Bath, drying, brush-out, and light tidy.                 |
+| Full Groom               |   90 min |      $85 | Bath, drying, haircut, brush-out, and nail trim.         |
+| Puppy Introduction Groom |   45 min |      $45 | Gentle first grooming visit for puppies up to 12 months. |
 
 ### Add-ons
 
-| Service | Duration | Subtotal | Compatibility |
-| --- | ---: | ---: | --- |
-| Nail Trim | 15 min | $15 | Bath & Brush or as a standalone express visit; not with Full Groom because it is included. |
-| De-shedding Treatment | 30 min | $30 | Bath & Brush or Full Groom only. |
+| Service               | Duration | Subtotal | Compatibility                                                                              |
+| --------------------- | -------: | -------: | ------------------------------------------------------------------------------------------ |
+| Nail Trim             |   15 min |      $15 | Bath & Brush or as a standalone express visit; not with Full Groom because it is included. |
+| De-shedding Treatment |   30 min |      $30 | Bath & Brush or Full Groom only.                                                           |
 
 ### Service-selection rules
 
@@ -83,18 +83,18 @@ Customers may choose **one base service and zero or more compatible add-ons**. A
 
 All groomers work their listed default hours unless an explicit time-off record overrides them.
 
-| Groomer | Default hours | Qualified services | Showcase note |
-| --- | --- | --- | --- |
-| Maya Chen | Mon–Fri 09:00–18:00; Sat 09:00–16:00 | All services | Senior groomer; demonstrates broad availability. |
-| Sofia Morales | Tue–Sat 09:00–17:00 | Bath & Brush, Full Groom, Puppy Introduction Groom, Nail Trim | Specializes in small and medium dogs. |
-| Liam Patel | Mon–Fri 10:00–18:00; Sat 10:00–16:00 | Bath & Brush, Nail Trim, De-shedding Treatment | Best demonstrator for add-on qualification rules. |
+| Groomer       | Default hours                        | Qualified services                                            | Showcase note                                     |
+| ------------- | ------------------------------------ | ------------------------------------------------------------- | ------------------------------------------------- |
+| Maya Chen     | Mon–Fri 09:00–18:00; Sat 09:00–16:00 | All services                                                  | Senior groomer; demonstrates broad availability.  |
+| Sofia Morales | Tue–Sat 09:00–17:00                  | Bath & Brush, Full Groom, Puppy Introduction Groom, Nail Trim | Specializes in small and medium dogs.             |
+| Liam Patel    | Mon–Fri 10:00–18:00; Sat 10:00–16:00 | Bath & Brush, Nail Trim, De-shedding Treatment                | Best demonstrator for add-on qualification rules. |
 
 Create at least these demo time-off records after seed data is in place:
 
-| Groomer | Time off | Reason | Why it exists |
-| --- | --- | --- | --- |
-| Maya Chen | First Wednesday of the demo month, 12:00–14:00 | Training | Tests a mid-day blackout. |
-| Sofia Morales | First Saturday of the demo month | Leave | Tests a full-day blackout. |
+| Groomer       | Time off                                       | Reason   | Why it exists              |
+| ------------- | ---------------------------------------------- | -------- | -------------------------- |
+| Maya Chen     | First Wednesday of the demo month, 12:00–14:00 | Training | Tests a mid-day blackout.  |
+| Sofia Morales | First Saturday of the demo month               | Leave    | Tests a full-day blackout. |
 
 ## 5. Pet information collected
 
@@ -148,27 +148,27 @@ This describes required data and states—not final visual design.
 
 ### Required states and recovery paths
 
-| Situation | Product behavior |
-| --- | --- |
-| No saved pet | Require creating a pet before service selection. |
-| No qualified groomer | Explain that no groomer offers the selected services; allow service selection to change. |
-| No slots in range | Keep selected pet/services; let the customer change date range or groomer. |
-| Slot becomes unavailable at confirm | Display `SLOT_UNAVAILABLE`; retain selections and return to freshly calculated slots. |
-| Session expired | Require sign-in again; do not lose non-sensitive in-progress selections if practical. |
+| Situation                            | Product behavior                                                                             |
+| ------------------------------------ | -------------------------------------------------------------------------------------------- |
+| No saved pet                         | Require creating a pet before service selection.                                             |
+| No qualified groomer                 | Explain that no groomer offers the selected services; allow service selection to change.     |
+| No slots in range                    | Keep selected pet/services; let the customer change date range or groomer.                   |
+| Slot becomes unavailable at confirm  | Display `SLOT_UNAVAILABLE`; retain selections and return to freshly calculated slots.        |
+| Session expired                      | Require sign-in again; do not lose non-sensitive in-progress selections if practical.        |
 | Customer outside cancellation cutoff | Disable customer cancel/reschedule and display the policy; direct them to contact the salon. |
 
 ## 7. Backend/API implications
 
 These values are inputs to the schema and API contract; do not make the frontend compute them.
 
-| Capability | Backend responsibility |
-| --- | --- |
-| Pet management | Enforce authenticated customer ownership. |
-| Catalogue | Return active services and compatibility metadata. |
-| Groomer lookup | Return qualifications and working schedule only as needed. |
-| Availability | Validate selected services/pet/groomer, calculate total duration and `blocked_until`, and return slots. |
-| Create/reschedule | Revalidate all rules transactionally; enforce overlap constraint and `Idempotency-Key`. |
-| Cancel | Enforce role and 24-hour customer cutoff, then transition status. |
+| Capability        | Backend responsibility                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------- |
+| Pet management    | Enforce authenticated customer ownership.                                                               |
+| Catalogue         | Return active services and compatibility metadata.                                                      |
+| Groomer lookup    | Return qualifications and working schedule only as needed.                                              |
+| Availability      | Validate selected services/pet/groomer, calculate total duration and `blocked_until`, and return slots. |
+| Create/reschedule | Revalidate all rules transactionally; enforce overlap constraint and `Idempotency-Key`.                 |
+| Cancel            | Enforce role and 24-hour customer cutoff, then transition status.                                       |
 
 ## 8. TDD acceptance examples for later phases
 

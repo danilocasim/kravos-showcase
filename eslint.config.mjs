@@ -13,6 +13,12 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "doc/**",
+    // Reference design system: framework-agnostic .jsx specimens and clickable
+    // kits that are read, not built. The ported components live in components/.
+    "claude-design/**",
+    // Transient local-stack state written by the Supabase CLI, already gitignored.
+    "supabase/.temp/**",
+    "supabase/.branches/**",
   ]),
 ]);
 

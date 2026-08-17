@@ -1,0 +1,36 @@
+<!-- @dsCard group="Components" viewport="700x420" name="Booking" subtitle="Pet card, service and groomer options, slot picker, price summary, appointment card" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{background:var(--bg-page);padding:20px;font:var(--type-body)}.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.stack{display:flex;flex-direction:column;gap:12px}.lbl{font:var(--type-overline);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--text-subtle);margin-bottom:8px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}</style></head><body><div id="root"></div>
+<script type="text/babel">
+const { PetCard, ServiceOption, GroomerOption, TimeSlotPicker, PriceSummary, AppointmentCard, Button } = window.PawAmpPolishDesignSystem_25f2e9;
+function Demo(){
+  const [slot,setSlot]=React.useState({date:'2026-09-02',time:'10:15 AM'});
+  return (
+  <div className="stack" style={{gap:20}}>
+    <div className="grid2">
+      <div className="stack">
+        <PetCard name="Biscuit" breed="Cockapoo" size="MEDIUM" ageYears={3} temperament="Calm" allergies="Oatmeal shampoo" onEdit={()=>{}} onDelete={()=>{}} />
+        <ServiceOption name="Full Groom" description="Bath, drying, haircut, brush-out, and nail trim." durationMinutes={90} priceCents={8500} selected onSelect={()=>{}} />
+        <ServiceOption name="De-shedding Treatment" kind="ADD_ON" description="A coat treatment for compatible services." durationMinutes={30} priceCents={3000} onSelect={()=>{}} />
+        <GroomerOption anyAvailable selected onSelect={()=>{}} />
+        <GroomerOption name="Liam Patel" bio="Bath, brush, nail, and de-shedding care" hours="Mon–Fri, 10:00 AM–6:00 PM" disabled disabledReason="Not qualified for Full Groom" />
+      </div>
+      <div className="stack">
+        <TimeSlotPicker selected={slot} onSelect={setSlot} note="Eastern time. Times include a 15-minute cleanup buffer."
+          days={[{date:'2026-09-02',label:'Wed 2 Sep',slots:[{time:'9:00 AM',groomer:'Maya'},{time:'10:15 AM',groomer:'Sofia'},{time:'12:00 PM',groomer:'Maya',unavailable:true},{time:'2:15 PM',groomer:'Liam'}]}]} />
+        <PriceSummary subtotalCents={11500} totalMinutes={120}
+          lines={[{name:'Full Groom',priceCents:8500,durationMinutes:90},{name:'De-shedding Treatment',priceCents:3000,durationMinutes:30}]}
+          footnote="You pay at the salon. Free changes until 24 hours before." />
+      </div>
+    </div>
+    <AppointmentCard dateLabel="Wed 2 Sep" timeLabel="10:15 AM" endTimeLabel="12:15 PM" petName="Biscuit" groomerName="Maya Chen"
+      services={['Full Groom','De-shedding Treatment']} subtotalCents={11500} status="CONFIRMED" reference="APT-8F3C21"
+      actions={<><Button size="sm" variant="secondary" iconLeft="refresh-cw">Reschedule</Button><Button size="sm" variant="ghost">Cancel</Button></>} />
+  </div>);}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script></body></html>

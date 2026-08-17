@@ -1,0 +1,104 @@
+/* Paw & Polish color system.
+   Spruce = primary (calm, clinical-clean, trustworthy). Apricot = accent (warm, friendly).
+   Neutrals are warm-tinted "sand" greys so screens read soft rather than clinical. */
+:root {
+  /* Spruce — primary */
+  --spruce-50: #f1f9f7;
+  --spruce-100: #e4f3ef;
+  --spruce-200: #c6e7e0;
+  --spruce-300: #97d2c6;
+  --spruce-400: #5fb6a6;
+  --spruce-500: #2a9584;
+  --spruce-600: #1b7a69;
+  --spruce-700: #146356;
+  --spruce-800: #0f5347;
+  --spruce-900: #0a3b33;
+  --spruce-950: #062b25;
+
+  /* Apricot — accent */
+  --apricot-50: #fef7f0;
+  --apricot-100: #fdeedd;
+  --apricot-200: #fbdcbd;
+  --apricot-300: #f8c391;
+  --apricot-400: #f2a45c;
+  --apricot-500: #e8862f;
+  --apricot-600: #c96a22;
+  --apricot-700: #a9531b;
+
+  /* Sand — warm neutrals */
+  --sand-0: #ffffff;
+  --sand-50: #fbf9f4;
+  --sand-100: #f7f3ec;
+  --sand-150: #f2ede4;
+  --sand-200: #eae4d9;
+  --sand-300: #d8d0c2;
+  --sand-400: #bdb4a5;
+  --sand-500: #9c9384;
+  --sand-600: #7a7264;
+  --sand-700: #5c554b;
+  --sand-800: #423d36;
+  --sand-900: #2b2823;
+  --sand-950: #1c1a17;
+
+  /* Semantic hues */
+  --success-50: #edf8f4;
+  --success-500: #1b7a69;
+  --success-700: #0f5347;
+  --warning-50: #fdf4e3;
+  --warning-500: #b7791f;
+  --warning-700: #8a5a15;
+  --danger-50: #fdecea;
+  --danger-500: #b3261e;
+  --danger-700: #8c1d17;
+  --info-50: #eaf3fa;
+  --info-500: #1f5f8b;
+  --info-700: #174866;
+
+  /* ---------- Semantic aliases (use these in components) ---------- */
+  --bg-page: var(--sand-100);
+  --bg-page-alt: var(--sand-50);
+  --surface-card: var(--sand-0);
+  --surface-sunken: var(--sand-150);
+  --surface-raised: var(--sand-0);
+  --surface-inverse: var(--spruce-900);
+  --surface-accent-soft: var(--apricot-100);
+  --surface-primary-soft: var(--spruce-50);
+  --surface-overlay: rgba(28, 26, 23, 0.45);
+
+  --text-heading: var(--spruce-950);
+  --text-body: var(--sand-800);
+  --text-muted: var(--sand-600);
+  --text-subtle: var(--sand-500);
+  --text-inverse: var(--sand-50);
+  --text-on-primary: #ffffff;
+  --text-link: var(--spruce-700);
+  --text-link-hover: var(--spruce-800);
+
+  --border-subtle: var(--sand-200);
+  --border-default: var(--sand-300);
+  --border-strong: var(--sand-400);
+  --border-focus: var(--spruce-600);
+
+  --action-primary: var(--spruce-700);
+  --action-primary-hover: var(--spruce-800);
+  --action-primary-active: var(--spruce-900);
+  --action-accent: var(--apricot-500);
+  --action-accent-hover: var(--apricot-600);
+  --action-disabled-bg: var(--sand-200);
+  --action-disabled-text: var(--sand-500);
+
+  --focus-ring: 0 0 0 3px var(--spruce-200);
+
+  /* Appointment + availability status */
+  --status-confirmed-bg: var(--success-50);
+  --status-confirmed-fg: var(--success-700);
+  --status-completed-bg: var(--sand-150);
+  --status-completed-fg: var(--sand-700);
+  --status-cancelled-bg: var(--danger-50);
+  --status-cancelled-fg: var(--danger-700);
+  --status-pending-bg: var(--warning-50);
+  --status-pending-fg: var(--warning-700);
+  --slot-free-border: var(--sand-300);
+  --slot-selected-bg: var(--spruce-700);
+  --slot-unavailable-fg: var(--sand-400);
+}

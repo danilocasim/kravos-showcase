@@ -44,6 +44,14 @@ describe("createSupabaseBookingUseCases", () => {
     vi.clearAllMocks();
   });
 
+  it("memoizes the verified actor across concurrent use-case reads", async () => {
+    const useCases = await createSupabaseBookingUseCases();
+
+    await Promise.all([useCases.listMyPets(), useCases.listMyPets()]);
+
+    expect(mocks.requireAuthenticatedActor).toHaveBeenCalledTimes(1);
+  });
+
   it("binds pet ownership to the verified server actor", async () => {
     const useCases = await createSupabaseBookingUseCases();
 

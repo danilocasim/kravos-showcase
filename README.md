@@ -54,8 +54,12 @@ Versioned Supabase migrations live in `supabase/migrations/`:
 - `20260813044700_confirmed_appointment_blocks.sql` — minimal confirmed busy intervals for server availability without widening appointment reads.
 - `20260813050000_appointment_lifecycle.sql` — atomic authenticated create, reschedule, and cancellation RPCs with authoritative validation and snapshots.
 - `20260813060000_appointment_idempotency.sql` — keyed lifecycle retries that replay the original successful response and retain the overlap constraint as the concurrency authority.
+- `20260814123000_pgcrypto_digest_compatibility.sql` — schema-qualified digest compatibility for hosted and local PostgreSQL search paths.
+- `20260814160000_admin_appointment_status_audit.sql` — guarded admin completion plus durable status actor/time auditing and removal of direct admin appointment writes.
 
-The non-sensitive showcase catalogue is `supabase/seeds/demo_catalogue.sql`. It contains services, groomers, qualifications, hours, and time off only—never credentials, customers, pets, or appointments. Local Supabase resets load it through `supabase/config.toml`.
+The non-sensitive base catalogue is `supabase/seeds/demo_catalogue.sql`. It contains services, groomers, qualifications, hours, and time off only—never credentials, customers, pets, or appointments. Local Supabase resets load it through `supabase/config.toml`.
+
+An opt-in, idempotent operational showcase dataset lives at `supabase/seeds/showcase_operational_data.sql`. It adds five groomers, seven services, 20 clearly labelled non-login mock customers, 30 pets, and 493 appointments with 801 service snapshots across July–September 2026. It is intentionally excluded from normal resets and must be applied only to an explicitly selected non-production showcase environment after the base catalogue.
 
 Apply migrations to a local Supabase stack with `supabase migration up --local`, or use your approved Supabase deployment workflow for a hosted environment. Run the schema/policy assertion suite only against a **disposable development/test database** with the standard Supabase `auth` schema and `authenticated` role available:
 
@@ -63,7 +67,7 @@ Apply migrations to a local Supabase stack with `supabase migration up --local`,
 ALLOW_DESTRUCTIVE_TEST_DATABASE=1 TEST_DATABASE_URL='postgresql://…' pnpm test:db
 ```
 
-The test runner requires the explicit opt-in and refuses any database whose name is not `paw_polish_test_*`, `paw_polish_task*`, or `paw_polish_ci_*`. SQL assertions open transactions and roll back their fixtures. They verify the cleanup buffer, compatibility, RLS customer/admin boundaries, non-overlap constraint, lifecycle policy, idempotent create/reschedule/cancel replay, the minimal confirmed-appointment availability query, and demo seed data. The `test:db` command also runs a two-connection Node/PostgreSQL race test: exactly one same-groomer/same-slot create may succeed. Idempotency keys are opaque nonblank values up to 255 characters; successful records are retained for 24 hours, and expired keys are rejected rather than reused. A Supabase local stack requires Docker Desktop, but the application itself has no Dockerfile or Docker Compose setup.
+The test runner requires the explicit opt-in and refuses any database whose name is not `paw_polish_test_*`, `paw_polish_task*`, or `paw_polish_ci_*`. SQL assertions open transactions and roll back their fixtures. They verify the cleanup buffer, compatibility, RLS customer/admin boundaries, non-overlap constraint, lifecycle policy, idempotent create/reschedule/cancel replay, audited admin transitions, the minimal confirmed-appointment availability query, and demo seed data. Run `pnpm test:db:concurrency` separately with the same guarded environment to prove that exactly one same-groomer/same-slot create may succeed. Idempotency keys are opaque nonblank values up to 255 characters; successful records are retained for 24 hours, and expired keys are rejected rather than reused. A Supabase local stack requires Docker Desktop, but the application itself has no Dockerfile or Docker Compose setup.
 
 ## Authentication and roles
 
@@ -106,6 +110,10 @@ POST   /api/v1/appointments/{appointmentId}/cancel
 The API returns `401` for missing/invalid sessions, `403` for authorized-but-forbidden lifecycle changes, `404` for inaccessible pets/appointments, `409` for booking and idempotency conflicts, and `422` for malformed request input.
 
 `pnpm test` includes deterministic HTTP composition tests with two seeded authenticated customers. They exercise service and groomer discovery, customer-owned pet CRUD, availability, create/retry, appointment listing, stale-slot rejection, rescheduling, cancellation, and ownership isolation through the real Route Handler and server factory. The separate guarded database suite proves the PostgreSQL RPC, RLS, and concurrent-insert guarantees when a disposable Supabase-compatible database is available.
+
+## Deployment
+
+Production variables, Supabase Auth callback configuration, migration rollout, admin provisioning, and the preview smoke checklist are documented in [`doc/deployment.md`](./doc/deployment.md). The runbook contains placeholders only and forbids application access to service-role or database credentials.
 
 ## Development rules
 

@@ -44,7 +44,8 @@ const createRepository = (overrides: Partial<BookingRepository> = {}) => {
     listGroomerWorkingHours: async () => [],
     listGroomerTimeOff: async () => [],
     listConfirmedAppointmentBlocks: async () => [],
-    listPetsByOwner: async () => [],
+    listAppointmentServices: async () => [],
+  listPetsByOwner: async () => [],
     getPetByOwner: async () => null,
     createPet: async () => {
       throw new Error("not needed");

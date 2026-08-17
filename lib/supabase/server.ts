@@ -23,8 +23,15 @@ export const createSupabaseServerClient = async (): Promise<SupabaseClient> => {
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll: (cookiesToSet) => {
-        for (const { name, value, options } of cookiesToSet) {
-          cookieStore.set(name, value, options);
+        try {
+          for (const { name, value, options } of cookiesToSet) {
+            cookieStore.set(name, value, options);
+          }
+        } catch {
+          // Next.js rejects cookie writes during a Server Component render, so a
+          // refreshed session cannot be persisted from a page. This is safe to
+          // ignore: proxy.ts refreshes the session on every matched request and
+          // is the writer that actually persists the rotated cookies.
         }
       },
     },

@@ -1,0 +1,16 @@
+<!-- @dsCard group="Spacing" viewport="700x170" name="Layout &amp; control sizes" subtitle="Container widths, header/sidebar, control heights, 44px hit target" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>body{padding:16px;background:var(--surface-card)}.sw{display:flex;gap:0;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-subtle)}.sw>div{flex:1;height:64px;display:flex;align-items:flex-end;padding:6px;font:var(--type-overline);letter-spacing:var(--tracking-wide)}.legend{display:flex;gap:0;margin-top:6px}.legend>span{flex:1;font:var(--type-caption);color:var(--text-subtle);padding-left:6px}
+.tiles{display:flex;gap:10px;flex-wrap:wrap}.tile{border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:10px 12px;min-width:118px}.tile b{display:block;font:var(--type-caption);color:var(--text-muted);font-weight:var(--weight-medium)}.tile i{display:block;font:var(--type-mono);font-size:var(--text-2xs);color:var(--text-subtle);font-style:normal;margin-top:2px}
+</style></head><body><div class="tiles">
+<div class="tile"><b>Form column</b><i>--container-form 720</i></div>
+<div class="tile"><b>App content</b><i>--container-app 1080</i></div>
+<div class="tile"><b>Sidebar</b><i>--sidebar-w 248</i></div>
+<div class="tile"><b>Header</b><i>--header-h 64</i></div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+<div style="height:var(--control-h-sm);padding:0 12px;display:grid;place-items:center;border:1px solid var(--border-default);border-radius:var(--radius-control);font:var(--type-small)">sm 32</div>
+<div style="height:var(--control-h-md);padding:0 14px;display:grid;place-items:center;border:1px solid var(--border-default);border-radius:var(--radius-control);font:var(--type-body)">md 40</div>
+<div style="height:var(--control-h-lg);padding:0 16px;display:grid;place-items:center;border:1px solid var(--border-default);border-radius:var(--radius-control);font:var(--type-body)">lg 48</div>
+<div style="height:var(--hit-target-min);padding:0 16px;display:grid;place-items:center;background:var(--surface-primary-soft);border:1px solid var(--spruce-200);border-radius:var(--radius-control);font:var(--type-caption);color:var(--spruce-800)">44 min tap target</div>
+</div></body></html>

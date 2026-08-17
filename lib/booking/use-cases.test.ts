@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type {
   Appointment,
+  AppointmentServiceSnapshot,
   BookingRepository,
   Groomer,
   GroomerServiceQualification,
@@ -145,6 +146,25 @@ const appointments: ReadonlyArray<Appointment> = [
   },
 ];
 
+const appointmentServices: ReadonlyArray<AppointmentServiceSnapshot> = [
+  {
+    appointmentId: "appointment-owned",
+    serviceId: "service-bath",
+    serviceName: "Bath & Brush",
+    serviceKind: "BASE",
+    durationMinutes: 60,
+    priceCents: 5500,
+  },
+  {
+    appointmentId: "appointment-other",
+    serviceId: "service-full-groom",
+    serviceName: "Full Groom",
+    serviceKind: "BASE",
+    durationMinutes: 90,
+    priceCents: 8500,
+  },
+];
+
 const pets: Array<Pet> = [
   {
     id: "pet-owned",
@@ -193,6 +213,10 @@ const createRepository = (): BookingRepository => ({
   },
   listAppointmentsByCustomer: async (requestedCustomerId) =>
     appointments.filter((appointment) => appointment.customerId === requestedCustomerId),
+  listAppointmentServices: async (appointmentIds) =>
+    appointmentServices.filter((snapshot) =>
+      appointmentIds.includes(snapshot.appointmentId),
+    ),
   listPetsByOwner: async (ownerId) =>
     pets.filter((pet) => pet.ownerId === ownerId),
   getPetByOwner: async (petId, ownerId) =>
@@ -248,6 +272,14 @@ describe("catalogue use cases", () => {
       expect.not.arrayContaining([
         expect.objectContaining({ id: "service-retired" }),
       ]),
+    );
+  });
+
+  it("exposes persisted service compatibility for customer presentation", async () => {
+    const useCases = createUseCases();
+
+    await expect(useCases.listServiceCompatibility()).resolves.toEqual(
+      compatibility,
     );
   });
 
@@ -352,6 +384,16 @@ describe("customer appointment use cases", () => {
 
     await expect(useCases.listMyAppointments()).resolves.toEqual([
       expect.objectContaining({ id: "appointment-owned", customerId }),
+    ]);
+  });
+  it("lists service snapshots only for the current customer's appointments", async () => {
+    const useCases = createUseCases();
+
+    await expect(useCases.listMyAppointmentServices()).resolves.toEqual([
+      expect.objectContaining({
+        appointmentId: "appointment-owned",
+        serviceName: "Bath & Brush",
+      }),
     ]);
   });
 });

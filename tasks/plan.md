@@ -50,6 +50,7 @@ Business defaults + low-fidelity booking flow
 **Decide:** business name, IANA timezone, working hours, slot interval, buffer semantics, cancellation cutoff, service catalogue and compatibility, groomers, and service qualifications.
 
 **Acceptance criteria:**
+
 - [ ] The business timezone, weekly schedule, slot interval, buffer semantics, and cancellation policy are explicit.
 - [ ] At least three groomers and five services have names, prices, durations, qualifications, and compatibility rules.
 - [ ] A simple flow exists: pet → services → groomer/any available → available time → review/explicit confirmation.
@@ -68,11 +69,13 @@ Business defaults + low-fidelity booking flow
 **Description:** Initialize the single root Next.js TypeScript application with `pnpm`, App Router, Tailwind, ESLint, Vitest, Playwright, Zod, date utilities, and server/browser Supabase helpers. There are no customer or admin screens in this task.
 
 **Acceptance criteria:**
+
 - [x] Root commands exist for `pnpm dev`, `pnpm lint`, `pnpm test`, and `pnpm build`.
 - [x] Server-only and browser-safe Supabase helpers have clear module boundaries.
 - [x] No FastAPI, Docker, monorepo configuration, secret value, or duplicate backend is introduced.
 
 **Completion evidence:**
+
 - [x] **RED:** `pnpm test -- lib/supabase/public-config.test.ts` failed because `./public-config` did not exist.
 - [x] **GREEN:** the focused test passed after the public Supabase configuration validator was implemented.
 - [x] `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (2 tests), `pnpm exec playwright --version` (1.62.1), and `pnpm build` all passed from the repository root.
@@ -84,6 +87,7 @@ Business defaults + low-fidelity booking flow
 **Description:** Implement the approved [`phase-0.md`](./phase-0.md) data decisions in a versioned migration: `profiles`, `pets`, `services`, `service_compatibility`, `groomers`, `groomer_services`, `groomer_working_hours`, `groomer_time_off`, `appointments`, `appointment_services`, and idempotency records. Add indexes, foreign keys, checks, and the PostgreSQL exclusion constraint that prevents overlapping confirmed appointments for one groomer.
 
 **Acceptance criteria:**
+
 - [x] The migration applies cleanly to an empty development database.
 - [x] `appointments.starts_at`, `appointments.service_ends_at`, and `appointments.blocked_until` use `timestamptz`; `blocked_until` includes the persisted cleanup buffer.
 - [x] Services record their base/add-on kind and standalone eligibility, and compatibility is persisted and enforceable server-side.
@@ -91,6 +95,7 @@ Business defaults + low-fidelity booking flow
 - [x] A database-level constraint rejects two overlapping `CONFIRMED` appointments for the same groomer using `[starts_at, blocked_until)`.
 
 **Completion evidence:**
+
 - [x] **RED:** the schema assertions failed against a newly created empty database with `Missing required table public.profiles`.
 - [x] **GREEN:** `20260812184025_initial_booking_schema.sql` applied to a fresh disposable PostgreSQL database with a minimal test-only `auth.users` dependency, and `pnpm test:db` passed.
 - [x] The SQL assertions prove the 15-minute cleanup buffer, same-groomer overlap rejection over `[starts_at, blocked_until)`, boundary-touching slot acceptance, and base/add-on compatibility enforcement. Test fixtures roll back; the disposable database was removed after verification.
@@ -102,11 +107,13 @@ Business defaults + low-fidelity booking flow
 **Description:** Define `CUSTOMER` and `ADMIN` application roles in `profiles`, enable RLS for every application table, create customer/admin policies, and seed a non-sensitive catalogue, groomer schedules, time off, and test fixtures.
 
 **Acceptance criteria:**
+
 - [x] A customer can access only their own pets and appointments.
 - [x] Only admins can change catalogue, schedule, and other customers' appointments.
 - [x] Seed data contains no credentials, access tokens, or service-role key.
 
 **Completion evidence:**
+
 - [x] **RED:** policy tests as `authenticated` customer one failed before the RLS migration with `permission denied for table pets`.
 - [x] **GREEN:** a fresh disposable PostgreSQL database replayed both migrations and the demo seed; `pnpm test:db` passed as two customers and an admin using `request.jwt.claim.sub` identity simulation.
 - [x] Tests prove customer ownership isolation, profile self-promotion denial, customer catalogue/schedule write denial, admin catalogue/schedule/cross-customer appointment authority, the full prior schema contract, and demo seed counts/constraints.
@@ -119,11 +126,13 @@ Business defaults + low-fidelity booking flow
 **Description:** Implement server-only functions that verify Supabase sessions/JWTs and derive the authenticated application profile and role. They are used by future Server Actions and Route Handlers; do not create sign-in pages yet.
 
 **Acceptance criteria:**
+
 - [x] The server derives customer identity from a verified session/token, never a request-body `customerId`.
 - [x] Customer and admin guards have predictable `401` and `403` behavior.
 - [x] Automated test setup can obtain or mock distinct customer/admin identities without committing secrets.
 
 **Completion evidence:**
+
 - [x] **RED:** guards tests failed before `lib/auth/guards.ts` existed; the Auth-signup profile test then failed because no profile trigger existed.
 - [x] **GREEN:** 18 focused auth tests pass for missing/invalid sessions, absent/invalid profiles, customer/admin guards, role mismatch, and Supabase-client failures that fail closed.
 - [x] The auth-user trigger creates a `CUSTOMER` profile while ignoring role metadata; a fresh database replay plus `pnpm test:db` proves it.
@@ -148,12 +157,14 @@ Business defaults + low-fidelity booking flow
 **Description:** Create server-only query/use-case functions for active services, approved base/add-on compatibility, qualified groomers, working hours, time off, and customer-owned pet CRUD. These are domain functions; they are not React components or pages.
 
 **Acceptance criteria:**
+
 - [x] Only active services and groomers are returned to a customer.
 - [x] The server accepts exactly one base/allowed-express service and only compatible add-ons.
 - [x] A groomer is eligible only when qualified for every selected service.
 - [x] Pet reads and mutations enforce ownership; time off overrides standard hours.
 
 **Completion evidence:**
+
 - [x] **RED:** focused tests initially failed because the booking domain, Supabase adapter, authenticated composition, and public active-groomer query did not exist.
 - [x] **GREEN:** 14 focused tests cover active catalogue/groomers, one-base/express selection and compatibility, all-service groomer qualification, time-off subtraction, pet validation, owner-scoped CRUD, Supabase request mapping, and verified-actor composition.
 - [x] All Task 5 modules are server-only. The request factory obtains the actor exclusively through the Task 4 verified-auth guard; pet repository operations scope reads/writes to that actor ID in addition to RLS.
@@ -166,11 +177,13 @@ Business defaults + low-fidelity booking flow
 **Description:** Implement `searchAvailability` in `lib/booking`. Given selected services, a pet, optional groomer, and date range, compute valid slots from service duration, the approved buffer, schedules, time off, and confirmed appointment blocked intervals.
 
 **Acceptance criteria:**
+
 - [x] The server calculates total duration, subtotal, `serviceEndsAt`, and `blockedUntil`; clients cannot supply those values.
 - [x] Returned slots fit working hours after their cleanup buffer and do not overlap appointment blocked intervals or time off.
 - [x] UTC storage and business-timezone/DST conversion are handled at the boundaries.
 
 **Completion evidence:**
+
 - [x] **RED:** eight focused availability tests failed before `searchAvailability` existed; the DB test separately failed because the minimal confirmed-block function was absent.
 - [x] **GREEN:** availability tests cover service-derived timing and pricing, 15-minute slot starts, cleanup buffers, working-hour boundary, time off, existing confirmed blocks, qualification, any-available groomer attribution, owned-pet enforcement, malformed/range-limited input, and `America/New_York` DST conversion.
 - [x] Confirmed blocks now use a security-definer RPC that returns only groomer ID and UTC interval fields; it permits availability to see another customer's busy time without widening direct appointment reads.
@@ -183,12 +196,14 @@ Business defaults + low-fidelity booking flow
 **Description:** Implement create, reschedule, and cancel operations using a database transaction/RPC or equivalent atomic operation. Each request re-checks authorization, selected-service compatibility, pet ownership, groomer qualifications, pricing, schedule, and availability immediately before mutation.
 
 **Acceptance criteria:**
+
 - [x] The server derives subtotal, `serviceEndsAt`, and `blockedUntil` from persisted services and the approved buffer.
 - [x] A stale slot returns `409 SLOT_UNAVAILABLE`; it is never silently replaced.
 - [x] Cancellation changes status to `CANCELLED` and obeys the configured cutoff.
 - [x] Rescheduling uses the same atomic conflict rules as creation.
 
 **Completion evidence:**
+
 - [x] **RED:** lifecycle use-case tests failed before the create/reschedule/cancel boundary existed, and the database lifecycle test failed before its RPCs existed.
 - [x] **GREEN:** three security-definer database functions derive `auth.uid()`, validate selection/ownership/qualification/schedule/time-off atomically, snapshot services, and rely on the exclusion constraint to convert stale conflicts to `SLOT_UNAVAILABLE`.
 - [x] Integration coverage proves create snapshots timing/pricing, cross-customer pet denial, stale reschedule conflict, successful reschedule snapshot replacement, customer cutoff, and admin cutoff override.
@@ -200,11 +215,13 @@ Business defaults + low-fidelity booking flow
 **Description:** Add `Idempotency-Key` support to all appointment mutations and prove correctness when retried or requested simultaneously. This is separate from availability search: a search is advisory and the mutation is authoritative.
 
 **Acceptance criteria:**
+
 - [x] Retrying a mutation with the same idempotency key returns the original outcome without a duplicate appointment.
 - [x] Concurrent attempts for one groomer/time yield exactly one confirmed appointment.
 - [x] Expired or invalid idempotency keys have documented, safe behavior.
 
 **Completion evidence:**
+
 - [x] **RED:** valid idempotency input was initially rejected by the lifecycle boundary, and the integration suite had no keyed RPC signature.
 - [x] **GREEN:** each keyed `security definer` RPC rechecks current ownership/role authorization before serializing same actor/operation/key retries, stores an immutable successful appointment response, and replays it without repeating the mutation. Keys are nonblank opaque strings up to 255 characters.
 - [x] Reusing a live key with a different canonical request yields `IDEMPOTENCY_KEY_REUSED` (`409`). Records expire after 24 hours; an expired key yields `IDEMPOTENCY_KEY_EXPIRED` (`409`) and is never recycled, preventing delayed retries from becoming fresh work.
@@ -245,11 +262,13 @@ POST   /api/v1/appointments/{appointmentId}/cancel
 ```
 
 **Acceptance criteria:**
+
 - [x] Inputs validate at the route boundary and use one documented error shape.
 - [x] Mutations require `Idempotency-Key` and use correct `401`, `403`, `404`, `409`, and validation responses.
 - [x] Acting users are derived from verified sessions/tokens, not request identifiers.
 
 **Completion evidence:**
+
 - [x] **RED:** handler tests first failed because `./booking-handlers` did not exist; path-adapter tests then failed because the required `/api/v1` Route Handler files did not exist.
 - [x] **GREEN:** all eleven thin authenticated Route Handlers delegate only to the shared booking domain. Request JSON, UUID path parameters, and lifecycle idempotency headers validate at the HTTP boundary; the stable error envelope is `{ "error": { "code", "message", "details" } }`.
 - [x] The request factory gates every endpoint with one memoized verified Supabase actor and passes the same server-derived actor to booking use cases; neither JSON bodies nor route IDs can select a customer.
@@ -258,12 +277,12 @@ POST   /api/v1/appointments/{appointmentId}/cancel
 
 **Dependency:** Checkpoint B.
 
-
 ### Task 10: Publish the API contract and verify the backend without screens
 
 **Description:** Create the checked-in API contract/OpenAPI document from the implemented route schemas. Verify the whole API with seeded users, repeatable HTTP tests, and an API client such as Bruno/Postman/Playwright request fixtures. Do not start the UI until this checkpoint passes.
 
 **Acceptance criteria:**
+
 - [x] Every public endpoint has request, success, and error schemas plus authentication requirements.
 - [x] Contract checks and HTTP tests cover the entire booking lifecycle.
 - [x] The documented API matches actual responses and only exposes implemented booking operations.
@@ -288,11 +307,12 @@ POST   /api/v1/appointments/{appointmentId}/cancel
 **Description:** Add the sign-up, sign-in, account/session shell, and pet-management screens. Use Supabase Auth and the tested API/server actions; do not add booking logic to React components.
 
 **Acceptance criteria:**
-- [ ] Customers can sign up, sign in/out, and reach protected pages.
-- [ ] Customers can list, add, edit, and delete only their pets.
-- [ ] Forms have labels, inline validation, accessible error messages, loading states, and mobile layouts.
 
-**Verification:** Playwright tests cover sign-in/out and pet management as two separate customers.
+- [x] Customers can sign up, sign in/out, and reach protected pages.
+- [x] Customers can list, add, edit, and delete only their pets.
+- [x] Forms have labels, inline validation, accessible error messages, loading states, and mobile layouts.
+
+**Verification:** Playwright covers sign-up, sign-in/out, protected routing, and pet management with two customers in desktop Chromium and Pixel 7 projects. The final full run passed 40/40 browser tests. `pnpm test` passed 156/156 tests; `pnpm lint`, `pnpm typecheck`, and `pnpm build` passed.
 
 **Dependency:** Checkpoint C.
 
@@ -301,18 +321,19 @@ POST   /api/v1/appointments/{appointmentId}/cancel
 **Description:** Build the polished customer flow: choose/add pet → services → groomer or any available → server-calculated slot → review → explicit confirmation. Then add My Appointments, rescheduling, and cancellation views.
 
 **Acceptance criteria:**
-- [ ] The UI uses API/server responses for prices, duration, and availability; it calculates none of them itself.
-- [ ] Confirmation sends an idempotency key and gives a clear recovery route for `SLOT_UNAVAILABLE`.
-- [ ] A customer can view, reschedule, or cancel only their own appointments.
 
-**Verification:** Playwright completes booking, stale-slot recovery, reschedule, and cancellation at mobile and desktop widths.
+- [x] The UI uses API/server responses for prices, duration, and availability; it calculates none of them itself.
+- [x] Confirmation sends an idempotency key and gives a clear recovery route for `SLOT_UNAVAILABLE`.
+- [x] A customer can view, reschedule, or cancel only their own appointments.
+
+**Verification:** Playwright completes booking, stale-slot recovery, reschedule, cancellation, and the 24-hour change cutoff in desktop Chromium and Pixel 7 projects; the final full run passed 40/40 tests. `pnpm test:contract` validated all 11 unchanged API operations. Guarded database assertions and the two-connection booking race test passed against `paw_polish_test_phase4`.
 
 **Dependency:** Task 11.
 
 ### Checkpoint D: Customer application works without AI
 
-- [ ] A customer can sign in, create a pet, book, view, reschedule, and cancel an appointment.
-- [ ] The customer UI is accessible, responsive, and uses the established API/domain behavior.
+- [x] A customer can sign in, create a pet, book, view, reschedule, and cancel an appointment.
+- [x] The customer UI is accessible, responsive, and uses the established API/domain behavior.
 
 ---
 
@@ -323,32 +344,34 @@ POST   /api/v1/appointments/{appointmentId}/cancel
 **Description:** Build an admin-only appointment list/calendar with date and groomer filters, and safe transitions to `COMPLETED` or `CANCELLED`. Finish the non-AI booking product with security, accessibility, and deployed-preview testing.
 
 **Acceptance criteria:**
-- [ ] Customers cannot reach admin screens or execute admin API operations.
-- [ ] Admin status changes follow allowed transitions and are audited.
-- [ ] No secrets reach browser code, source control, logs, or API responses.
-- [ ] Production variables, Supabase redirect URLs, and migration deployment steps are documented without secret values.
+
+- [x] Customers cannot reach admin screens or execute admin API operations.
+- [x] Admin status changes follow allowed transitions and are audited.
+- [x] No secrets reach browser code, source control, logs, or API responses.
+- [x] Production variables, Supabase redirect URLs, and migration deployment steps are documented without secret values.
 
 **Verification:** Browser-test admin access and status transitions; run full lint, unit/integration/E2E suite, production build, and deployed-preview smoke test.
+
+**Verification status:** Local release gates pass: 40 Vitest files / 167 tests, guarded SQL assertions, the two-connection concurrency test, 48 Playwright tests across desktop and Pixel 7, lint, typecheck, the 11-operation OpenAPI contract, production build, visual review, and a browser-static sensitive-marker scan. The deployed-preview smoke test remains pending until a preview URL and disposable credentials are provided.
 
 **Dependency:** Checkpoint D.
 
 ### Checkpoint E: Booking system is demo-ready without AI
 
-- [ ] Customer and admin flows work end to end.
-- [ ] The public API contract is documented and tested.
-- [ ] No v1 non-goal has been introduced.
+- [x] Customer and admin flows work end to end locally on desktop and mobile.
+- [x] The public API contract is documented and tested.
+- [x] No v1 non-goal has been introduced.
 
----
-
+Checkpoint E remains operationally pending only on the documented deployed-preview smoke test.
 
 ## Risks and mitigations
 
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-| Double bookings under concurrent requests | High | PostgreSQL exclusion constraint, atomic mutation, and idempotency keys |
-| Incorrect timezone/DST slots | High | Decide business timezone first; store `timestamptz`; add DST tests |
-| API and frontend diverge | Medium | Complete/test shared use cases and `/api/v1` before building any product UI |
-| Scope creep delays the showcase | Medium | Treat payments, reminders, memberships, multi-location, Docker, FastAPI, and monorepo as non-goals |
+| Risk                                      | Impact | Mitigation                                                                                         |
+| ----------------------------------------- | ------ | -------------------------------------------------------------------------------------------------- |
+| Double bookings under concurrent requests | High   | PostgreSQL exclusion constraint, atomic mutation, and idempotency keys                             |
+| Incorrect timezone/DST slots              | High   | Decide business timezone first; store `timestamptz`; add DST tests                                 |
+| API and frontend diverge                  | Medium | Complete/test shared use cases and `/api/v1` before building any product UI                        |
+| Scope creep delays the showcase           | Medium | Treat payments, reminders, memberships, multi-location, Docker, FastAPI, and monorepo as non-goals |
 
 ## Open questions to resolve in Task 0
 
