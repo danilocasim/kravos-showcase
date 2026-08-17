@@ -2,7 +2,7 @@
 
 ## Objective
 
-Deliver a single full-stack Next.js pet-grooming booking application. First complete its database, server-only business rules, authenticated `/api/v1` API, and backend verification. Then build customer and admin screens on top of that tested backend. Add the Kravos widget and agent only after the non-AI product works independently.
+Deliver a single full-stack Next.js pet-grooming booking application. First complete its database, server-only business rules, authenticated `/api/v1` API, and backend verification. Then build customer and admin screens on top of that tested backend.
 
 This plan follows [`../AGENTS.md`](../AGENTS.md). The frontend must not define or duplicate booking behavior: it only calls the server-side booking use cases/API already verified in earlier phases.
 
@@ -13,7 +13,6 @@ This plan follows [`../AGENTS.md`](../AGENTS.md). The frontend must not define o
 - Next.js Route Handlers and server-only modules are the backend. `lib/booking` is the only home for booking rules.
 - Supabase RLS and server-side authorization enforce customer/admin data boundaries.
 - PostgreSQL, not a client-side availability check, prevents conflicting bookings.
-- Kravos is an external widget/agent client of the booking API. Its current integration details must be verified from official documentation before implementation.
 - No product frontend is built until **Phase 4**. Phase 0 includes only a low-fidelity flow sketch to protect the API design.
 - Every behavior change uses test-driven development; test evidence is a completion requirement, not optional polish.
 
@@ -40,7 +39,6 @@ Business defaults + low-fidelity booking flow
   -> versioned HTTP API + backend verification
   -> customer UI
   -> admin UI + release checks
-  -> Kravos adapter/widget configuration
 ```
 
 ## Phase 0 — Product defaults and API-shaping wireframe
@@ -268,9 +266,9 @@ POST   /api/v1/appointments/{appointmentId}/cancel
 **Acceptance criteria:**
 - [x] Every public endpoint has request, success, and error schemas plus authentication requirements.
 - [x] Contract checks and HTTP tests cover the entire booking lifecycle.
-- [x] The documented API matches actual responses; no intended Kravos feature is guessed or implemented here.
+- [x] The documented API matches actual responses and only exposes implemented booking operations.
 
-**Verification:** `pnpm test:contract`, `pnpm test` (14 files, 75 tests), guarded `pnpm test:db` on a freshly replayed disposable database, `pnpm typecheck`, `pnpm lint`, and `pnpm build` passed. `doc/openapi.v1.json` describes the 11 same-origin cookie-session operations; Route Handler response tests validate both success and standard error payloads against it. The seeded HTTP composition suite verifies customer lifecycle, ownership, stale-slot/retry behavior, and the narrow admin cancellation authority. No Kravos endpoint or authentication contract was added.
+**Verification:** `pnpm test:contract`, `pnpm test` (14 files, 75 tests), guarded `pnpm test:db` on a freshly replayed disposable database, `pnpm typecheck`, `pnpm lint`, and `pnpm build` passed. `doc/openapi.v1.json` describes the 11 same-origin cookie-session operations; Route Handler response tests validate both success and standard error payloads against it. The seeded HTTP composition suite verifies customer lifecycle, ownership, stale-slot/retry behavior, and the narrow admin cancellation authority.
 
 **Dependency:** Task 9.
 
@@ -315,7 +313,6 @@ POST   /api/v1/appointments/{appointmentId}/cancel
 
 - [ ] A customer can sign in, create a pet, book, view, reschedule, and cancel an appointment.
 - [ ] The customer UI is accessible, responsive, and uses the established API/domain behavior.
-- [ ] The Kravos widget is still absent.
 
 ---
 
@@ -343,34 +340,6 @@ POST   /api/v1/appointments/{appointmentId}/cancel
 
 ---
 
-## Phase 6 — Kravos (only after Checkpoint E)
-
-### Task 14: Verify the current Kravos contract
-
-**Description:** Consult official, current Kravos documentation and the configured platform workspace. Verify the widget embed mechanism, agent action/OpenAPI registration format, authentication/session method, callback/streaming behavior, endpoint allowlisting, and environment setup.
-
-**Acceptance criteria:**
-- [ ] Every Kravos-specific decision is backed by current official documentation or a verified platform setting.
-- [ ] Required actions map to existing `/api/v1` operations and shared booking rules.
-- [ ] Unknown platform details are captured as TODOs, never invented.
-
-**Verification:** Review the actual Kravos configuration and complete a non-production connectivity check.
-
-**Dependency:** Checkpoint E.
-
-### Task 15: Embed Kravos and add only its verified adapter requirements
-
-**Description:** Add the Kravos widget and, only if its verified contract requires it, thin integration Route Handlers that establish short-lived customer context and invoke the existing booking API/domain. Limit the agent to availability search, booking after explicit customer consent, rescheduling, and cancellation.
-
-**Acceptance criteria:**
-- [ ] The widget never handles a password, service-role key, or database credential.
-- [ ] The server derives the customer from verified context; an agent-supplied `customerId` is never trusted.
-- [ ] The agent has no admin action or cross-customer access.
-- [ ] Retry behavior remains idempotent, and a booking is created only after the user confirms pet, services, date/time, and groomer/any-available choice.
-
-**Verification:** Complete a Kravos-assisted test booking and prove it appears in My Appointments and the admin calendar. Test expired context, cross-customer access, stale slot, and retry behavior.
-
-**Dependency:** Task 14.
 
 ## Risks and mitigations
 
@@ -378,8 +347,6 @@ POST   /api/v1/appointments/{appointmentId}/cancel
 | --- | --- | --- |
 | Double bookings under concurrent requests | High | PostgreSQL exclusion constraint, atomic mutation, and idempotency keys |
 | Incorrect timezone/DST slots | High | Decide business timezone first; store `timestamptz`; add DST tests |
-| Widget/agent has excess authority | High | Narrow actions, short-lived verified context, server-derived customer identity, and RLS |
-| Kravos contract is assumed | High | Start Phase 6 only after current official documentation is checked |
 | API and frontend diverge | Medium | Complete/test shared use cases and `/api/v1` before building any product UI |
 | Scope creep delays the showcase | Medium | Treat payments, reminders, memberships, multi-location, Docker, FastAPI, and monorepo as non-goals |
 
@@ -388,4 +355,3 @@ POST   /api/v1/appointments/{appointmentId}/cancel
 1. Which business timezone, working hours, slot interval, buffer, and cancellation cutoff will Paw & Polish use?
 2. Is an account required for every booking? This plan assumes authenticated customers.
 3. Are service duration and price fixed for v1, or do they vary by pet size? This plan recommends fixed catalogue values.
-4. Which current Kravos documentation governs the widget and agent action integration? Do not answer from memory.

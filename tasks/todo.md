@@ -1,6 +1,6 @@
 # Paw & Polish — Backend-First Implementation Checklist
 
-Follow [`plan.md`](./plan.md) in order. Do not start product frontend work until **Checkpoint C** passes, and do not start Kravos until **Checkpoint E** passes.
+Follow [`plan.md`](./plan.md) in order. Do not start product frontend work until **Checkpoint C** passes.
 
 ## Mandatory TDD gate (for every implementation task)
 
@@ -36,13 +36,8 @@ Never implement a behavior first and add tests afterward. Use unit tests for pur
 ## Phase 4 — Customer frontend
 - [ ] 11. Build sign-in/session shell and customer pet-management screens.
 - [ ] 12. Build booking, My Appointments, rescheduling, and cancellation screens.
-- [ ] **Checkpoint D:** customer booking works on mobile and desktop without Kravos.
+- [ ] **Checkpoint D:** customer booking works on mobile and desktop.
 
 ## Phase 5 — Admin frontend and release
 - [ ] 13. Build the admin appointment console and run release-quality checks.
 - [ ] **Checkpoint E:** customer/admin product and public API are demo-ready without AI.
-
-## Phase 6 — Kravos
-- [ ] 14. Verify the current Kravos widget/agent/action contract from official documentation.
-- [ ] 15. Embed Kravos and add only its verified secure adapter requirements.
-- [ ] **Complete:** Kravos-assisted booking correctly appears in customer and admin views.

@@ -170,8 +170,6 @@ These values are inputs to the schema and API contract; do not make the frontend
 | Create/reschedule | Revalidate all rules transactionally; enforce overlap constraint and `Idempotency-Key`. |
 | Cancel | Enforce role and 24-hour customer cutoff, then transition status. |
 
-The future Kravos agent may call the same narrow capabilities. It must not calculate schedule/pricing, set a customer identity, or create a booking before explicit user confirmation.
-
 ## 8. TDD acceptance examples for later phases
 
 Implement these as failing tests before their associated implementation:

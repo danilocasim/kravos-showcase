@@ -1,6 +1,6 @@
 # Paw & Polish
 
-A backend-first pet-grooming booking system built for a future Kravos widget integration. The normal customer and admin product will work without the widget; Kravos will later be a constrained client of the same booking API.
+A full-stack pet-grooming booking system for customers and salon administrators.
 
 ## Stack
 
@@ -75,7 +75,7 @@ The server-only auth boundary exposes `getOptionalActor`, `requireAuthenticatedA
 
 All `/api/v1` endpoints require a verified Supabase session. The server derives the acting user from that session and its database-backed profile; request bodies never contain a customer ID.
 
-The machine-readable contract is [`doc/openapi.v1.json`](./doc/openapi.v1.json). Validate it with `pnpm test:contract`. It describes only the implemented same-origin, cookie-session API; no Kravos-specific endpoint, credential, or authentication scheme is implied.
+The machine-readable contract is [`doc/openapi.v1.json`](./doc/openapi.v1.json). Validate it with `pnpm test:contract`. It describes the implemented same-origin, cookie-session API.
 
 ```text
 GET    /api/v1/services

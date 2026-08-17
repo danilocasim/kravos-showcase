@@ -3,7 +3,7 @@
   "info": {
     "title": "Paw & Polish Booking API",
     "version": "1.0.0",
-    "description": "Authenticated first-party booking API. This contract intentionally contains no Kravos-specific authentication, actions, or endpoints."
+    "description": "Authenticated first-party booking API."
   },
   "servers": [
     {
@@ -441,7 +441,7 @@
         "type": "apiKey",
         "in": "cookie",
         "name": "sb-<project-ref>-auth-token",
-        "description": "A browser session cookie issued by the configured Supabase project. `<project-ref>` is derived from the deployment's Supabase URL, and Supabase may chunk the cookie. Clients should use the authenticated browser cookie jar; this v1 contract does not define bearer-token or Kravos authentication."
+        "description": "A browser session cookie issued by the configured Supabase project. `<project-ref>` is derived from the deployment's Supabase URL, and Supabase may chunk the cookie. Clients should use the authenticated browser cookie jar."
       }
     },
     "parameters": {

@@ -2,11 +2,11 @@
 
 ## Purpose
 
-This document is the source of truth for implementation decisions in this repository. It keeps the first release focused: a reliable pet-grooming booking system that can later be controlled through a Kravos widget and agent.
+This document is the source of truth for implementation decisions in this repository. It keeps the first release focused on a reliable pet-grooming booking system.
 
 [`tasks/phase-0.md`](tasks/phase-0.md) contains the proposed operational defaults, booking-flow wireframe, and TDD acceptance examples. Its Phase 0 checklist must be approved before Task 1; once approved, it is the source of truth for business hours, catalogue, buffers, service compatibility, and cancellation behavior.
 
-When a requirement is absent or conflicts with this document or an approved Phase 0 brief, do not invent a feature, provider setting, Kravos capability, or security model. Ask for clarification or record a clearly labelled TODO.
+When a requirement is absent or conflicts with this document or an approved Phase 0 brief, do not invent a feature, provider setting, or security model. Ask for clarification or record a clearly labelled TODO.
 
 ## Locked v1 decisions
 
@@ -14,8 +14,6 @@ When a requirement is absent or conflicts with this document or an approved Phas
 - Use **Supabase** for hosted PostgreSQL and customer/admin authentication.
 - The application backend is **Next.js server-side code**: Route Handlers, Server Actions, and server-only domain modules.
 - Do **not** add FastAPI, Docker, a monorepo, microservices, Redis, queues, payments, notifications, memberships, or multi-location support in v1.
-- Kravos is an **external embedded widget and agent platform**. It is not the application's database or booking backend.
-- The customer booking UI must work completely without the Kravos widget.
 
 Add FastAPI only if the booking API becomes an independently deployed product for multiple external clients. Add Docker only when deployment or local-environment parity creates a demonstrated need.
 
@@ -32,14 +30,9 @@ Server-only booking service
           |
           v
 Supabase: Auth + PostgreSQL
-
-Embedded Kravos widget -> Kravos agent platform -> protected Next.js integration routes
-                                                     |
-                                                     v
-                                            same booking service
 ```
 
-The browser must never directly write booking tables. Kravos must never receive a database URL, Supabase service-role key, or unrestricted database access.
+The browser must never directly write booking tables.
 
 ## Code layout
 
@@ -74,7 +67,7 @@ Use UTC `timestamptz` values in the database. Convert to the configured business
 
 ## Non-negotiable booking rules
 
-1. The server calculates appointment duration, subtotal, `service_ends_at`, and `blocked_until` from persisted service data and the approved cleanup buffer. The client and agent do not provide those values or a final price.
+1. The server calculates appointment duration, subtotal, `service_ends_at`, and `blocked_until` from persisted service data and the approved cleanup buffer. The client does not provide those values or a final price.
 2. The server validates one base service (or an allowed standalone express service), permitted add-ons, and every base-service/add-on compatibility pair.
 3. A groomer may only be booked for services assigned through `groomer_services` and within working hours.
 4. Availability is calculated from working hours, time off, service duration, configured buffers, and active appointments.
@@ -121,21 +114,7 @@ POST /api/v1/appointments/{appointmentId}/reschedule
 POST /api/v1/appointments/{appointmentId}/cancel
 ```
 
-All mutation requests must validate input at the route boundary and support an `Idempotency-Key` header. This prevents an agent retry, browser retry, or network retry from creating duplicate appointments.
-
-The actual JSON schemas, authentication fields, and OpenAPI requirements for Kravos are not yet verified. Do not invent them. Define them from current Kravos platform documentation when integration work begins.
-
-## Kravos integration (later phase)
-
-Kravos is a client of the booking system, not a second implementation of it.
-
-1. A user signs in through the booking application; the widget does not collect or handle the user's password.
-2. The application creates a short-lived, signed widget/session context linked to the authenticated customer.
-3. The Kravos agent calls only narrow, protected booking operations: find availability, create a confirmed appointment after explicit consent, reschedule, and cancel.
-4. The server derives the acting customer from verified context. Never trust a `customerId` supplied in an agent request body.
-5. The agent gets only the data needed for the task. It has no admin endpoints, database credentials, or cross-customer access.
-
-If Kravos requires a separate endpoint adapter or an OpenAPI document, implement that adapter as thin Route Handlers that call `lib/booking`; do not fork booking logic.
+All mutation requests must validate input at the route boundary and support an `Idempotency-Key` header. This prevents a browser or network retry from creating duplicate appointments.
 
 ## Deliberate non-goals
 
@@ -158,4 +137,3 @@ Do not add these in v1 unless the user explicitly changes scope:
 5. Verify the complete backend with seeded identities and HTTP tests before creating the product UI.
 6. Build the customer UI: sign-in, pet management, booking, and appointment management.
 7. Build the admin schedule and appointment UI, then perform release-quality checks.
-8. Add the Kravos widget and agent configuration only after its current platform contract is verified.
