@@ -111,6 +111,64 @@ const findRequest = (
 };
 
 describe("createSupabaseBookingRepository", () => {
+  it("targets the service-role-only Kravos lifecycle RPCs for a delegated customer", async () => {
+    const requests: Array<CapturedRequest> = [];
+    const repository = createSupabaseBookingRepository(createTestClient(requests), {
+      delegatedCustomerId: customerId,
+    });
+
+    await repository.createConfirmedAppointment({
+      petId,
+      groomerId: "00000000-0000-4000-8000-000000000803",
+      selectedServiceIds: ["00000000-0000-4000-8000-000000000804"],
+      startsAt: "2026-09-07T13:00:00.000Z",
+      idempotencyKey: "create-key",
+    });
+    await repository.rescheduleConfirmedAppointment({
+      appointmentId: petId,
+      groomerId: "00000000-0000-4000-8000-000000000803",
+      selectedServiceIds: ["00000000-0000-4000-8000-000000000804"],
+      startsAt: "2026-09-08T13:00:00.000Z",
+      idempotencyKey: "reschedule-key",
+    });
+    await repository.cancelConfirmedAppointment({
+      appointmentId: petId,
+      idempotencyKey: "cancel-key",
+    });
+
+    expect(
+      JSON.parse(
+        findRequest(
+          requests,
+          "POST",
+          "rpc/kravos_create_confirmed_appointment",
+        ).body,
+      ),
+    ).toMatchObject({ trusted_actor_id: customerId });
+    expect(
+      JSON.parse(
+        findRequest(
+          requests,
+          "POST",
+          "rpc/kravos_reschedule_confirmed_appointment",
+        ).body,
+      ),
+    ).toMatchObject({ trusted_actor_id: customerId });
+    expect(
+      JSON.parse(
+        findRequest(
+          requests,
+          "POST",
+          "rpc/kravos_cancel_confirmed_appointment",
+        ).body,
+      ),
+    ).toEqual({
+      trusted_actor_id: customerId,
+      requested_appointment_id: petId,
+      requested_idempotency_key: "cancel-key",
+    });
+  });
+
   it("maps catalogue queries and binds every pet mutation to the verified owner", async () => {
     const requests: Array<CapturedRequest> = [];
     const repository = createSupabaseBookingRepository(createTestClient(requests));

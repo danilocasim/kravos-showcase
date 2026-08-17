@@ -28,6 +28,19 @@ const requiredOperations = [
   ["/api/v1/appointments/{appointmentId}/cancel", "post"],
 ] as const;
 
+const kravosOperations = [
+  ["/api/v1/integrations/kravos/catalog", "post"],
+  ["/api/v1/integrations/kravos/customers/resolve", "post"],
+  ["/api/v1/integrations/kravos/customers/context", "post"],
+  ["/api/v1/integrations/kravos/booking/options", "post"],
+  ["/api/v1/integrations/kravos/booking/confirm", "post"],
+  ["/api/v1/integrations/kravos/booking/reschedule", "post"],
+  ["/api/v1/integrations/kravos/availability/search", "post"],
+  ["/api/v1/integrations/kravos/appointments/create", "post"],
+  ["/api/v1/integrations/kravos/appointments/reschedule", "post"],
+  ["/api/v1/integrations/kravos/appointments/cancel", "post"],
+] as const;
+
 const getOperation = (path: string, method: string) => {
   const operation = apiContract.paths[path]?.[method];
   expect(operation, `${method.toUpperCase()} ${path} must be documented`).toBeDefined();
@@ -40,6 +53,30 @@ const getOperation = (path: string, method: string) => {
 };
 
 describe("OpenAPI v1 contract", () => {
+  it("documents every Kravos custom-tool operation with session-or-bearer authentication", () => {
+    expect(apiContract.components.securitySchemes).toHaveProperty("KravosBearer");
+    expect(apiContract.components.securitySchemes).toHaveProperty(
+      "DemoConciergeMarker",
+    );
+
+    for (const [path, method] of kravosOperations) {
+      const operation = getOperation(path, method);
+      expect(operation.security).toEqual([
+        { SupabaseSession: [] },
+        { KravosBearer: [] },
+        ...(path.includes("/booking/") ? [{ DemoConciergeMarker: [] }] : []),
+      ]);
+      expect(operation.responses).toHaveProperty(
+        path.endsWith("/appointments/create") || path.endsWith("/booking/confirm")
+          ? "201"
+          : "200",
+      );
+      expect(operation.responses).toHaveProperty("401");
+      expect(operation.responses).toHaveProperty("422");
+      expect(operation.responses).toHaveProperty("500");
+    }
+  });
+
   it("defines every public API operation, version, and cookie-session requirement", () => {
     expect(apiContract.openapi).toMatch(/^3\.0\./);
     expect(apiContract.info.version).toBe("1.0.0");

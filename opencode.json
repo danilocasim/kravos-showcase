@@ -48,6 +48,11 @@
       "url": "https://outline.z.madsoftware.tech/mcp",
       "enabled": true
     },
+    "kravos-platform": {
+      "type": "remote",
+      "url": "https://mcp.kravos.ai/api/v1",
+      "enabled": true
+    },
     "plane": {
       "type": "local",
       "command": [

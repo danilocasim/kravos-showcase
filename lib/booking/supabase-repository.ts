@@ -330,8 +330,14 @@ const toPetUpdate = (input: UpdatePetRecord) => ({
  * All pet reads and writes include the verified actor's owner ID, providing a
  * domain guard in addition to database RLS.
  */
+export interface SupabaseBookingRepositoryOptions {
+  /** Customer selected by a trusted service-role integration. */
+  readonly delegatedCustomerId?: string;
+}
+
 export const createSupabaseBookingRepository = (
   supabase: SupabaseClient,
+  options: SupabaseBookingRepositoryOptions = {},
 ): BookingRepository => ({
   listServices: async () => {
     const { data, error } = await supabase
@@ -406,8 +412,15 @@ export const createSupabaseBookingRepository = (
   },
   createConfirmedAppointment: async (input) => {
     const { data, error } = await supabase.rpc(
-      "create_confirmed_appointment",
-      toCreateAppointmentRpcInput(input),
+      options.delegatedCustomerId === undefined
+        ? "create_confirmed_appointment"
+        : "kravos_create_confirmed_appointment",
+      {
+        ...(options.delegatedCustomerId === undefined
+          ? {}
+          : { trusted_actor_id: options.delegatedCustomerId }),
+        ...toCreateAppointmentRpcInput(input),
+      },
     );
 
     if (error !== null) {
@@ -418,8 +431,15 @@ export const createSupabaseBookingRepository = (
   },
   rescheduleConfirmedAppointment: async (input) => {
     const { data, error } = await supabase.rpc(
-      "reschedule_confirmed_appointment",
-      toRescheduleAppointmentRpcInput(input),
+      options.delegatedCustomerId === undefined
+        ? "reschedule_confirmed_appointment"
+        : "kravos_reschedule_confirmed_appointment",
+      {
+        ...(options.delegatedCustomerId === undefined
+          ? {}
+          : { trusted_actor_id: options.delegatedCustomerId }),
+        ...toRescheduleAppointmentRpcInput(input),
+      },
     );
 
     if (error !== null) {
@@ -430,8 +450,13 @@ export const createSupabaseBookingRepository = (
   },
   cancelConfirmedAppointment: async (input) => {
     const { data, error } = await supabase.rpc(
-      "cancel_confirmed_appointment",
+      options.delegatedCustomerId === undefined
+        ? "cancel_confirmed_appointment"
+        : "kravos_cancel_confirmed_appointment",
       {
+        ...(options.delegatedCustomerId === undefined
+          ? {}
+          : { trusted_actor_id: options.delegatedCustomerId }),
         requested_appointment_id: input.appointmentId,
         requested_idempotency_key: input.idempotencyKey,
       },

@@ -23,6 +23,10 @@
     },
     {
       "name": "Appointments"
+    },
+    {
+      "name": "Kravos Integration",
+      "description": "Server-to-server custom-tool endpoints for the Paw & Polish concierge."
     }
   ],
   "paths": {
@@ -427,6 +431,276 @@
           }
         ]
       }
+    },
+    "/api/v1/integrations/kravos/catalog": {
+      "post": {
+        "operationId": "kravosGetBookingCatalog",
+        "summary": "Get the live catalogue for the Paw & Polish concierge",
+        "tags": ["Kravos Integration"],
+        "security": [{ "SupabaseSession": [] }, { "KravosBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/KravosEmptyRequest" },
+              "example": {}
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/KravosToolSuccess" },
+          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/api/v1/integrations/kravos/customers/resolve": {
+      "post": {
+        "operationId": "kravosResolveBookingCustomer",
+        "summary": "Resolve a customer from a display name and optional pet name",
+        "tags": ["Kravos Integration"],
+        "security": [{ "SupabaseSession": [] }, { "KravosBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KravosResolveCustomerRequest"
+              },
+              "example": { "customerName": "Jane Doe", "petName": "Milo" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/KravosToolSuccess" },
+          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/api/v1/integrations/kravos/customers/context": {
+      "post": {
+        "operationId": "kravosGetCustomerBookingContext",
+        "summary": "Get pets and appointments for a resolved customer",
+        "tags": ["Kravos Integration"],
+        "security": [{ "SupabaseSession": [] }, { "KravosBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KravosCustomerTargetRequest"
+              },
+              "example": {
+                "customerId": "00000000-0000-4000-8000-000000005001"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/KravosToolSuccess" },
+          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
+          "404": { "$ref": "#/components/responses/KravosCustomerNotFound" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/api/v1/integrations/kravos/booking/options": {
+      "post": {
+        "operationId": "kravosSearchHumanBookingOptions",
+        "summary": "Search booking options from customer-facing names",
+        "tags": ["Kravos Integration"],
+        "security": [
+          { "SupabaseSession": [] },
+          { "KravosBearer": [] },
+          { "DemoConciergeMarker": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KravosBookingOptionsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/KravosToolSuccess" },
+          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
+          "404": { "$ref": "#/components/responses/KravosCustomerNotFound" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/api/v1/integrations/kravos/booking/confirm": {
+      "post": {
+        "operationId": "kravosConfirmHumanBooking",
+        "summary": "Confirm a reviewed booking from customer-facing names and Eastern time",
+        "tags": ["Kravos Integration"],
+        "security": [
+          { "SupabaseSession": [] },
+          { "KravosBearer": [] },
+          { "DemoConciergeMarker": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KravosConfirmBookingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "$ref": "#/components/responses/KravosToolSuccess" },
+          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
+          "404": { "$ref": "#/components/responses/KravosCustomerNotFound" },
+          "409": { "$ref": "#/components/responses/CreateAppointmentConflict" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/api/v1/integrations/kravos/booking/reschedule": {
+      "post": {
+        "operationId": "kravosRescheduleHumanBooking",
+        "summary": "Reschedule a confirmed booking using names and Eastern local times",
+        "tags": ["Kravos Integration"],
+        "security": [
+          { "SupabaseSession": [] },
+          { "KravosBearer": [] },
+          { "DemoConciergeMarker": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KravosRescheduleBookingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/KravosToolSuccess" },
+          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
+          "404": { "$ref": "#/components/responses/KravosCustomerNotFound" },
+          "409": { "$ref": "#/components/responses/CreateAppointmentConflict" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/api/v1/integrations/kravos/availability/search": {
+      "post": {
+        "operationId": "kravosSearchBookingAvailability",
+        "summary": "Search live availability for a resolved customer and pet",
+        "tags": ["Kravos Integration"],
+        "security": [{ "SupabaseSession": [] }, { "KravosBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KravosAvailabilityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/KravosToolSuccess" },
+          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
+          "404": { "$ref": "#/components/responses/KravosCustomerNotFound" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/api/v1/integrations/kravos/appointments/create": {
+      "post": {
+        "operationId": "kravosCreateBooking",
+        "summary": "Create a confirmed appointment for a resolved customer",
+        "tags": ["Kravos Integration"],
+        "security": [{ "SupabaseSession": [] }, { "KravosBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KravosCreateAppointmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "$ref": "#/components/responses/KravosToolSuccess" },
+          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
+          "404": { "$ref": "#/components/responses/KravosCustomerNotFound" },
+          "409": { "$ref": "#/components/responses/CreateAppointmentConflict" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/api/v1/integrations/kravos/appointments/reschedule": {
+      "post": {
+        "operationId": "kravosRescheduleBooking",
+        "summary": "Reschedule a confirmed appointment for a resolved customer",
+        "tags": ["Kravos Integration"],
+        "security": [{ "SupabaseSession": [] }, { "KravosBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KravosRescheduleAppointmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/KravosToolSuccess" },
+          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
+          "403": { "$ref": "#/components/responses/LifecycleForbidden" },
+          "404": { "$ref": "#/components/responses/AppointmentNotFound" },
+          "409": { "$ref": "#/components/responses/RescheduleConflict" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/api/v1/integrations/kravos/appointments/cancel": {
+      "post": {
+        "operationId": "kravosCancelBooking",
+        "summary": "Cancel a confirmed appointment for a resolved customer",
+        "tags": ["Kravos Integration"],
+        "security": [{ "SupabaseSession": [] }, { "KravosBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KravosCancelAppointmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/KravosToolSuccess" },
+          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
+          "403": { "$ref": "#/components/responses/LifecycleForbidden" },
+          "404": { "$ref": "#/components/responses/AppointmentNotFound" },
+          "409": { "$ref": "#/components/responses/CancelConflict" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
     }
   },
   "components": {
@@ -436,6 +710,17 @@
         "in": "cookie",
         "name": "sb-<project-ref>-auth-token",
         "description": "A browser session cookie issued by the configured Supabase project. `<project-ref>` is derived from the deployment's Supabase URL, and Supabase may chunk the cookie. Clients should use the authenticated browser cookie jar."
+      },
+      "KravosBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Dedicated server-to-server bearer resolved by the Kravos custom-tool runtime. It must never be placed in widget or browser code."
+      },
+      "DemoConciergeMarker": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Paw-Polish-Concierge",
+        "description": "Demo-only marker accepted by the name-based booking option, confirmation, and rescheduling endpoints."
       }
     },
     "parameters": {
@@ -470,6 +755,233 @@
       }
     },
     "schemas": {
+      "KravosEmptyRequest": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "KravosResolveCustomerRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["customerName"],
+        "properties": {
+          "customerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "petName": { "type": "string", "minLength": 1, "maxLength": 80 }
+        }
+      },
+      "KravosCustomerTargetRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "customerId": {
+            "$ref": "#/components/schemas/Uuid",
+            "description": "Required for bearer calls; ignored when a verified customer session is present."
+          }
+        }
+      },
+      "KravosBookingOptionsRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["customerName", "petName", "serviceName"],
+        "properties": {
+          "customerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "petName": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "serviceName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "groomerName": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "startsOn": { "$ref": "#/components/schemas/BusinessDate" },
+          "endsOn": { "$ref": "#/components/schemas/BusinessDate" }
+        }
+      },
+      "KravosConfirmBookingRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "customerName",
+          "petName",
+          "serviceName",
+          "groomerName",
+          "startsOn",
+          "startTime",
+          "idempotencyKey"
+        ],
+        "properties": {
+          "customerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "petName": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "serviceName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "groomerName": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "startsOn": { "$ref": "#/components/schemas/BusinessDate" },
+          "startTime": {
+            "type": "string",
+            "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "24-hour local time in America/New_York."
+          },
+          "idempotencyKey": {
+            "$ref": "#/components/schemas/KravosIdempotencyKey"
+          }
+        }
+      },
+      "KravosRescheduleBookingRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "customerName",
+          "petName",
+          "currentStartsOn",
+          "currentStartTime",
+          "groomerName",
+          "startsOn",
+          "startTime",
+          "idempotencyKey"
+        ],
+        "properties": {
+          "customerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "petName": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "currentStartsOn": { "$ref": "#/components/schemas/BusinessDate" },
+          "currentStartTime": {
+            "type": "string",
+            "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "groomerName": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "startsOn": { "$ref": "#/components/schemas/BusinessDate" },
+          "startTime": {
+            "type": "string",
+            "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "idempotencyKey": {
+            "$ref": "#/components/schemas/KravosIdempotencyKey"
+          }
+        }
+      },
+      "KravosAvailabilityRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["customerId", "petId", "selectedServiceIds", "startsOn"],
+        "properties": {
+          "customerId": { "$ref": "#/components/schemas/Uuid" },
+          "petId": { "$ref": "#/components/schemas/Uuid" },
+          "selectedServiceIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "items": { "$ref": "#/components/schemas/Uuid" }
+          },
+          "groomerId": { "$ref": "#/components/schemas/NullableUuid" },
+          "startsOn": { "$ref": "#/components/schemas/BusinessDate" },
+          "endsOn": { "$ref": "#/components/schemas/BusinessDate" }
+        }
+      },
+      "KravosCreateAppointmentRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "customerId",
+          "petId",
+          "groomerId",
+          "selectedServiceIds",
+          "startsAt",
+          "idempotencyKey"
+        ],
+        "properties": {
+          "customerId": { "$ref": "#/components/schemas/Uuid" },
+          "petId": { "$ref": "#/components/schemas/Uuid" },
+          "groomerId": { "$ref": "#/components/schemas/Uuid" },
+          "selectedServiceIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "items": { "$ref": "#/components/schemas/Uuid" }
+          },
+          "startsAt": { "$ref": "#/components/schemas/IsoTimestamp" },
+          "idempotencyKey": {
+            "$ref": "#/components/schemas/KravosIdempotencyKey"
+          }
+        }
+      },
+      "KravosRescheduleAppointmentRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "customerId",
+          "appointmentId",
+          "groomerId",
+          "selectedServiceIds",
+          "startsAt",
+          "idempotencyKey"
+        ],
+        "properties": {
+          "customerId": { "$ref": "#/components/schemas/Uuid" },
+          "appointmentId": { "$ref": "#/components/schemas/Uuid" },
+          "groomerId": { "$ref": "#/components/schemas/Uuid" },
+          "selectedServiceIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "items": { "$ref": "#/components/schemas/Uuid" }
+          },
+          "startsAt": { "$ref": "#/components/schemas/IsoTimestamp" },
+          "idempotencyKey": {
+            "$ref": "#/components/schemas/KravosIdempotencyKey"
+          }
+        }
+      },
+      "KravosCancelAppointmentRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["customerId", "appointmentId", "idempotencyKey"],
+        "properties": {
+          "customerId": { "$ref": "#/components/schemas/Uuid" },
+          "appointmentId": { "$ref": "#/components/schemas/Uuid" },
+          "idempotencyKey": {
+            "$ref": "#/components/schemas/KravosIdempotencyKey"
+          }
+        }
+      },
+      "KravosIdempotencyKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "Opaque value reused only for an exact retry of one confirmed mutation."
+      },
+      "NullableUuid": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+        "nullable": true
+      },
+      "KravosToolSuccessEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["data"],
+        "properties": {
+          "data": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Operation-specific tool data. Identifiers are opaque UUIDs; instants are UTC ISO timestamps and customer-facing timezone is America/New_York."
+          }
+        }
+      },
       "Uuid": {
         "type": "string",
         "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
@@ -1179,6 +1691,38 @@
       }
     },
     "responses": {
+      "KravosToolSuccess": {
+        "description": "The Kravos custom-tool operation completed successfully.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/KravosToolSuccessEnvelope"
+            },
+            "example": {
+              "data": {
+                "status": "RESOLVED"
+              }
+            }
+          }
+        }
+      },
+      "KravosCustomerNotFound": {
+        "description": "The selected customer profile does not exist or is not a customer.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "CUSTOMER_NOT_FOUND",
+                "message": "The selected customer was not found.",
+                "details": []
+              }
+            }
+          }
+        }
+      },
       "AuthenticationRequired": {
         "description": "No verified Supabase session or matching application profile was available.",
         "content": {
