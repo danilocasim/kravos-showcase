@@ -6,8 +6,6 @@ import {
 } from "next/font/google";
 import type { ReactNode } from "react";
 
-import { KravosChatWidget } from "../components/integrations/kravos-chat-widget";
-
 import "./globals.css";
 
 /* The design system substitutes these three Google faces for a brand family it
@@ -55,7 +53,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
           Skip to main content
         </a>
         {children}
-        <KravosChatWidget />
       </body>
     </html>
   );

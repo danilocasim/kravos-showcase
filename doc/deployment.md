@@ -6,12 +6,17 @@ This runbook deploys the non-AI Paw & Polish booking product. It intentionally c
 
 Configure these values in the hosting provider separately for Preview and Production:
 
-| Variable                               | Source                                   | Exposure                                                                  |
-| -------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`             | Supabase project API settings            | Public by design                                                          |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase project API settings            | Public by design; RLS remains the authority                               |
-| `SUPABASE_SERVICE_ROLE_KEY`            | Supabase project API settings            | Secret; server-only access for the Kravos booking integration             |
-| `KRAVOS_BOOKING_TOOL_BEARER`           | A dedicated high-entropy generated value | Secret; must match the tenant-scoped Kravos custom-tool environment value |
+| Variable                                    | Source                                   | Exposure                                                                   |
+| ------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`                  | Supabase project API settings            | Public by design                                                           |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`      | Supabase project API settings            | Public by design; RLS remains the authority                                |
+| `NEXT_PUBLIC_KRAVOS_APP_URL`                | Kravos hosted web-app origin             | Public by design; HTTPS except for loopback development                    |
+| `NEXT_PUBLIC_KRAVOS_WIDGET_API_KEY`         | Signed-in concierge agent chat key       | Public by design; agent-scoped, chat-only, origin-restricted, rate-limited |
+| `NEXT_PUBLIC_KRAVOS_LANDING_WIDGET_API_KEY` | Public grooming-guide agent chat key     | Public by design; agent-scoped, chat-only, origin-restricted, rate-limited |
+| `SUPABASE_SERVICE_ROLE_KEY`                 | Supabase project API settings            | Secret; server-only access for the Kravos booking integration              |
+| `KRAVOS_BOOKING_TOOL_BEARER`                | A dedicated high-entropy generated value | Secret; must match the tenant-scoped Kravos custom-tool environment value  |
+
+The two widget keys deliberately identify separate agents: the landing-page key has no booking tools or account access, while the signed-in key loads only inside the verified `CUSTOMER` layout. Both keys are visible in browser markup by design, so their agent scope, exact origin allowlist, chat-only permission, and rate limit are the security boundary. They must never be reused for server-to-server operations.
 
 The service-role key is now required only by the server-only `/api/v1/integrations/kravos/*` composition. It must never use a `NEXT_PUBLIC_` prefix or appear in browser code, logs, responses, source control, or preview artifacts. All ordinary customer/admin routes continue to use the publishable key plus the verified Supabase session. Database URLs, access tokens, and database passwords remain deployment-only secrets and must not be exposed to the application.
 
@@ -60,7 +65,7 @@ Use disposable customer and admin accounts and non-production data:
 - Exercise the documented `/api/v1` contract with a customer session; verify cross-customer access remains unavailable.
 - Exercise all ten `/api/v1/integrations/kravos/*` operations with the configured bearer and a disposable customer: resolve, context, catalogue, availability, ID-based create/reschedule/cancel, and name-based options/confirm/reschedule. Confirm an invalid bearer returns `401` and an exact mutation retry does not duplicate work.
 - Check desktop and mobile layouts, keyboard focus, dialog focus return, browser console errors, and unexpected horizontal scrolling.
-- Inspect the built browser assets and network responses for secrets. Only the Supabase URL and publishable key may be public.
+- Inspect the built browser assets and network responses for secrets. Only the Supabase URL, Supabase publishable key, Kravos app URL, and two constrained widget keys may be public.
 - Run `pnpm test`, guarded database/concurrency tests against a disposable database, `pnpm test:e2e`, `pnpm test:contract`, `pnpm lint`, `pnpm typecheck`, and `pnpm build` against the release candidate.
 
 Record the preview URL, deployment identifier, migration versions, tester, timestamp, and pass/fail evidence in the release system rather than this repository. A local run does not substitute for the deployed-preview smoke test.
