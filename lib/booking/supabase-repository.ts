@@ -525,6 +525,22 @@ export const createSupabaseBookingRepository = (
     return toPet(parseRows(data, null, petSchema));
   },
   createPet: async (input) => {
+    if (options.delegatedCustomerId !== undefined) {
+      const { data, error } = await supabase.rpc("kravos_create_pet", {
+        trusted_actor_id: options.delegatedCustomerId,
+        requested_name: input.name,
+        requested_breed: input.breed,
+        requested_size: input.size,
+        requested_age_years: input.ageYears,
+        requested_temperament: input.temperament,
+        requested_coat_condition: input.coatCondition,
+        requested_allergies: input.allergies,
+        requested_notes: input.notes,
+      });
+
+      return toPet(parseRows(data, error, z.array(petSchema).length(1))[0]!);
+    }
+
     const { data, error } = await supabase
       .from("pets")
       .insert(toPetInsert(input))

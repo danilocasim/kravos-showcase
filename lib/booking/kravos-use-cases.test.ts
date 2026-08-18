@@ -98,6 +98,7 @@ const availability: AvailabilitySearchResult = {
 
 const customerUseCases = (): KravosCustomerBookingUseCases => ({
   listMyPets: vi.fn(async () => [pet]),
+  createMyPet: vi.fn(async () => pet),
   listMyAppointments: vi.fn(async () => [appointment]),
   listMyAppointmentServices: vi.fn(async () => [snapshot]),
   listActiveGroomers: vi.fn(async () => [groomer]),
@@ -292,6 +293,45 @@ describe("Kravos booking use cases", () => {
       appointmentId,
       idempotencyKey: "cancel-key",
     });
+  });
+
+  it("creates a pet through the selected customer's delegated use cases", async () => {
+    const dependencies = createDependencies();
+    const useCases = createKravosBookingUseCases(dependencies);
+    const input = {
+      name: "Drago",
+      breed: "German Shepherd",
+      size: "LARGE" as const,
+      ageYears: 3,
+    };
+
+    await expect(useCases.createPet({ customerId, pet: input })).resolves.toEqual(pet);
+
+    const delegated = dependencies.perCustomer.get(customerId)!;
+    expect(delegated.createMyPet).toHaveBeenCalledWith(input);
+  });
+
+  it("creates a pet only after resolving one unambiguous customer", async () => {
+    const dependencies = createDependencies();
+    dependencies.findCustomersByDisplayName.mockResolvedValue([profile]);
+    dependencies.listPetsByOwnerIds.mockResolvedValue([pet]);
+    const useCases = createKravosBookingUseCases(dependencies);
+    const input = {
+      name: "Chuchu",
+      breed: "Shih Tzu",
+      size: "SMALL" as const,
+      ageYears: 2,
+    };
+
+    await expect(
+      useCases.createPetForResolvedCustomer({ customerName: "Jane Doe", pet: input }),
+    ).resolves.toMatchObject({
+      status: "CREATED",
+      customer: profile,
+      pet,
+    });
+
+    expect(dependencies.perCustomer.get(customerId)!.createMyPet).toHaveBeenCalledWith(input);
   });
 
   it("bounds availability results so the model receives complete JSON", async () => {

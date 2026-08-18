@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import type { KravosBookingPrincipal } from "../../auth/kravos-tool-auth";
 import { businessTimeZone } from "../../booking/business-time";
+import { createPetSchema as customerPetSchema } from "../../booking/pet-schema";
 import type { createKravosBookingUseCases } from "../../booking/kravos-use-cases";
 import type { Appointment, Pet } from "../../booking/use-cases";
 
@@ -19,9 +20,11 @@ const resolveCustomerSchema = z
   .object({
     customerName: z.string().trim().min(1).max(100),
     petName: z.string().trim().min(1).max(80).optional(),
+    createPet: customerPetSchema.optional(),
   })
   .strict();
 const customerContextSchema = z.object(customerTargetSchema).strict();
+const createPetRequestSchema = customerPetSchema.extend(customerTargetSchema);
 const availabilitySchema = z
   .object({
     ...customerTargetSchema,
@@ -241,6 +244,12 @@ const toErrorResponse = (error: unknown): Response => {
     return errorResponse(error.status, error.code, error.message);
   }
 
+  const metadata =
+    error instanceof Error
+      ? { name: error.name, message: error.message.slice(0, 240) }
+      : { type: typeof error };
+  console.error("Kravos booking API request failed", metadata);
+
   return errorResponse(500, "INTERNAL_SERVER_ERROR", "An unexpected error occurred.");
 };
 
@@ -294,13 +303,28 @@ export const createKravosBookingApiHandlers = (
       dependencies,
       async () => {
         const input = await parseBody(request, resolveCustomerSchema);
+        if (input.createPet !== undefined) {
+          return dependencies.useCases.createPetForResolvedCustomer({
+            customerName: input.customerName,
+            pet: input.createPet,
+          });
+        }
         return dependencies.useCases.resolveCustomer({
           customerName: input.customerName,
           ...(input.petName === undefined ? {} : { petName: input.petName }),
         });
       },
       (result) =>
-        result.status === "RESOLVED"
+        result.status === "CREATED"
+          ? {
+              status: result.status,
+              customer: {
+                customerId: result.customer.id,
+                displayName: result.customer.displayName,
+              },
+              pet: toPet(result.pet),
+            }
+          : result.status === "RESOLVED"
           ? {
               status: result.status,
               customer: {
@@ -355,6 +379,20 @@ export const createKravosBookingApiHandlers = (
           changeCutoffAtEastern: toEasternInstant(appointment.changeCutoffAt),
         })),
       }),
+    ),
+  createPet: async (request: Request): Promise<Response> =>
+    run(
+      request,
+      dependencies,
+      async (principal) => {
+        const { customerId, ...pet } = await parseBody(request, createPetRequestSchema);
+        return dependencies.useCases.createPet({
+          customerId: effectiveCustomerId(principal, customerId),
+          pet,
+        });
+      },
+      toPet,
+      201,
     ),
   searchAvailability: async (request: Request): Promise<Response> =>
     run(

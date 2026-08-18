@@ -458,7 +458,7 @@
     "/api/v1/integrations/kravos/customers/resolve": {
       "post": {
         "operationId": "kravosResolveBookingCustomer",
-        "summary": "Resolve a customer from a display name and optional pet name",
+        "summary": "Resolve a customer or create a pet for one unambiguous customer",
         "tags": ["Kravos Integration"],
         "security": [{ "SupabaseSession": [] }, { "KravosBearer": [] }],
         "requestBody": {
@@ -468,7 +468,15 @@
               "schema": {
                 "$ref": "#/components/schemas/KravosResolveCustomerRequest"
               },
-              "example": { "customerName": "Jane Doe", "petName": "Milo" }
+              "example": {
+                "customerName": "Jane Doe",
+                "createPet": {
+                  "name": "Chuchu",
+                  "breed": "Shih Tzu",
+                  "size": "SMALL",
+                  "ageYears": 2
+                }
+              }
             }
           }
         },
@@ -501,6 +509,38 @@
         },
         "responses": {
           "200": { "$ref": "#/components/responses/KravosToolSuccess" },
+          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
+          "404": { "$ref": "#/components/responses/KravosCustomerNotFound" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/api/v1/integrations/kravos/pets/create": {
+      "post": {
+        "operationId": "kravosCreateCustomerPet",
+        "summary": "Create a pet for a resolved customer",
+        "tags": ["Kravos Integration"],
+        "security": [{ "SupabaseSession": [] }, { "KravosBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KravosCreatePetRequest"
+              },
+              "example": {
+                "customerId": "00000000-0000-4000-8000-000000005001",
+                "name": "Drago",
+                "breed": "German Shepherd",
+                "size": "LARGE",
+                "ageYears": 3
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "$ref": "#/components/responses/KravosToolSuccess" },
           "401": { "$ref": "#/components/responses/AuthenticationRequired" },
           "404": { "$ref": "#/components/responses/KravosCustomerNotFound" },
           "422": { "$ref": "#/components/responses/ValidationError" },
@@ -769,7 +809,38 @@
             "minLength": 1,
             "maxLength": 100
           },
-          "petName": { "type": "string", "minLength": 1, "maxLength": 80 }
+          "petName": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "createPet": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Creates a pet only when customerName resolves to exactly one customer.",
+            "required": ["name", "breed", "size", "ageYears"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+              "breed": { "type": "string", "minLength": 1, "maxLength": 100 },
+              "size": {
+                "type": "string",
+                "enum": ["SMALL", "MEDIUM", "LARGE"]
+              },
+              "ageYears": { "type": "integer", "minimum": 0, "maximum": 30 },
+              "temperament": {
+                "type": "string",
+                "maxLength": 500,
+                "nullable": true
+              },
+              "coatCondition": {
+                "type": "string",
+                "maxLength": 500,
+                "nullable": true
+              },
+              "allergies": {
+                "type": "string",
+                "maxLength": 2000,
+                "nullable": true
+              },
+              "notes": { "type": "string", "maxLength": 2000, "nullable": true }
+            }
+          }
         }
       },
       "KravosCustomerTargetRequest": {
@@ -780,6 +851,37 @@
             "$ref": "#/components/schemas/Uuid",
             "description": "Required for bearer calls; ignored when a verified customer session is present."
           }
+        }
+      },
+      "KravosCreatePetRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "breed", "size", "ageYears"],
+        "properties": {
+          "customerId": {
+            "$ref": "#/components/schemas/Uuid",
+            "description": "Required for bearer calls; ignored when a verified customer session is present."
+          },
+          "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "breed": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "size": { "type": "string", "enum": ["SMALL", "MEDIUM", "LARGE"] },
+          "ageYears": { "type": "integer", "minimum": 0, "maximum": 30 },
+          "temperament": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "coatCondition": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "allergies": {
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "notes": { "type": "string", "maxLength": 2000, "nullable": true }
         }
       },
       "KravosBookingOptionsRequest": {

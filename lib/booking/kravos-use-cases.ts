@@ -20,6 +20,7 @@ export interface KravosCustomerProfile {
 
 export interface KravosCustomerBookingUseCases {
   readonly listMyPets: () => Promise<ReadonlyArray<Pet>>;
+  readonly createMyPet: (input: unknown) => Promise<Pet>;
   readonly listMyAppointments: () => Promise<ReadonlyArray<Appointment>>;
   readonly listMyAppointmentServices: () => Promise<
     ReadonlyArray<AppointmentServiceSnapshot>
@@ -210,6 +211,29 @@ export const createKravosBookingUseCases = (
           appointment.startsAt.getTime() - changeCutoffMilliseconds,
         ).toISOString(),
       })),
+    };
+  };
+
+  const createPet = async (input: {
+    readonly customerId: string;
+    readonly pet: unknown;
+  }): Promise<Pet> => {
+    const { useCases } = await requireCustomer(input.customerId);
+
+    return useCases.createMyPet(input.pet);
+  };
+
+  const createPetForResolvedCustomer = async (input: {
+    readonly customerName: string;
+    readonly pet: unknown;
+  }) => {
+    const resolution = await resolveCustomer({ customerName: input.customerName });
+    if (resolution.status !== "RESOLVED") return resolution;
+
+    return {
+      status: "CREATED" as const,
+      customer: resolution.customer,
+      pet: await createPet({ customerId: resolution.customer.id, pet: input.pet }),
     };
   };
 
@@ -416,6 +440,8 @@ export const createKravosBookingUseCases = (
     resolveCustomer,
     getCatalog,
     getCustomerContext,
+    createPet,
+    createPetForResolvedCustomer,
     searchAvailability,
     createAppointment,
     rescheduleAppointment,

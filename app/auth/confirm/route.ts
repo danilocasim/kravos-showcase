@@ -14,16 +14,24 @@ const allowedTypes = new Set<EmailOtpType>([
 ]);
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  const code = request.nextUrl.searchParams.get("code");
   const tokenHash = request.nextUrl.searchParams.get("token_hash");
   const rawType = request.nextUrl.searchParams.get("type");
   const next = safeInternalNextPath(request.nextUrl.searchParams.get("next"));
+
+  const supabase = await createSupabaseServerClient();
+
+  if (code !== null) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error === null) return NextResponse.redirect(new URL(next, request.url));
+  }
 
   if (
     tokenHash !== null &&
     rawType !== null &&
     allowedTypes.has(rawType as EmailOtpType)
   ) {
-    const supabase = await createSupabaseServerClient();
     const { error } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
       type: rawType as EmailOtpType,

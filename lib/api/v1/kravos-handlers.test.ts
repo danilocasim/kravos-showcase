@@ -64,6 +64,34 @@ const createUseCases = (overrides: Partial<KravosBookingApiUseCases> = {}) => ({
     appointmentsTruncated: false,
     appointments: [],
   })),
+  createPet: vi.fn(async () => ({
+    id: "00000000-0000-4000-8000-000000005307",
+    ownerId: customerId,
+    name: "Drago",
+    breed: "German Shepherd",
+    size: "LARGE" as const,
+    ageYears: 3,
+    temperament: null,
+    coatCondition: null,
+    allergies: null,
+    notes: null,
+  })),
+  createPetForResolvedCustomer: vi.fn(async () => ({
+    status: "CREATED" as const,
+    customer: { id: customerId, displayName: "Jane Doe" },
+    pet: {
+      id: "00000000-0000-4000-8000-000000005307",
+      ownerId: customerId,
+      name: "Drago",
+      breed: "German Shepherd",
+      size: "LARGE" as const,
+      ageYears: 3,
+      temperament: null,
+      coatCondition: null,
+      allergies: null,
+      notes: null,
+    },
+  })),
   searchAvailability: vi.fn(async () => ({
     timeZone: "America/New_York" as const,
     totalDurationMinutes: 60,
@@ -193,6 +221,60 @@ describe("Kravos booking API handlers", () => {
     });
   });
 
+  it("creates a pet through the existing resolved-customer bearer tool", async () => {
+    const createdPet = {
+      id: "00000000-0000-4000-8000-000000005307",
+      ownerId: customerId,
+      name: "Chuchu",
+      breed: "Shih Tzu",
+      size: "SMALL" as const,
+      ageYears: 2,
+      temperament: null,
+      coatCondition: null,
+      allergies: null,
+      notes: null,
+    };
+    const { handlers, useCases } = createHandlers({
+      overrides: {
+        createPetForResolvedCustomer: vi.fn(async () => ({
+          status: "CREATED" as const,
+          customer: { id: customerId, displayName: "Tempest" },
+          pet: createdPet,
+        })),
+      },
+    });
+
+    const response = await handlers.resolveCustomer(
+      request("/api/v1/integrations/kravos/customers/resolve", {
+        customerName: "Tempest",
+        createPet: {
+          name: "Chuchu",
+          breed: "Shih Tzu",
+          size: "SMALL",
+          ageYears: 2,
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(useCases.createPetForResolvedCustomer).toHaveBeenCalledWith({
+      customerName: "Tempest",
+      pet: {
+        name: "Chuchu",
+        breed: "Shih Tzu",
+        size: "SMALL",
+        ageYears: 2,
+      },
+    });
+    await expect(response.json()).resolves.toMatchObject({
+      data: {
+        status: "CREATED",
+        customer: { displayName: "Tempest" },
+        pet: { name: "Chuchu", size: "SMALL" },
+      },
+    });
+  });
+
   it("uses a session customer instead of a body-supplied customer ID", async () => {
     const { handlers, useCases } = createHandlers({
       principal: {
@@ -209,6 +291,53 @@ describe("Kravos booking API handlers", () => {
 
     expect(response.status).toBe(200);
     expect(useCases.getCustomerContext).toHaveBeenCalledWith(customerId);
+  });
+
+  it("creates a pet for the authenticated customer rather than a supplied customer ID", async () => {
+    const { handlers, useCases } = createHandlers({
+      principal: {
+        kind: "CUSTOMER_SESSION",
+        actor: { id: customerId, role: "CUSTOMER" },
+      },
+      overrides: {
+        createPet: vi.fn(async () => ({
+          id: "00000000-0000-4000-8000-000000005307",
+          ownerId: customerId,
+          name: "Drago",
+          breed: "German Shepherd",
+          size: "LARGE" as const,
+          ageYears: 3,
+          temperament: null,
+          coatCondition: null,
+          allergies: null,
+          notes: null,
+        })),
+      },
+    });
+
+    const response = await handlers.createPet(
+      request("/api/v1/integrations/kravos/pets/create", {
+        customerId: otherCustomerId,
+        name: "Drago",
+        breed: "German Shepherd",
+        size: "LARGE",
+        ageYears: 3,
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(useCases.createPet).toHaveBeenCalledWith({
+      customerId,
+      pet: {
+        name: "Drago",
+        breed: "German Shepherd",
+        size: "LARGE",
+        ageYears: 3,
+      },
+    });
+    await expect(response.json()).resolves.toMatchObject({
+      data: { name: "Drago", breed: "German Shepherd", size: "LARGE" },
+    });
   });
 
   it("requires a customer ID for a bearer-authenticated customer operation", async () => {

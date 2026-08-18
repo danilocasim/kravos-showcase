@@ -103,6 +103,11 @@ describe("createSupabaseKravosBookingApiHandlers", () => {
     ).toBe(false);
     expect(
       authInput.isAllowedDemoRequest(
+        markedRequest("/api/v1/integrations/kravos/pets/create"),
+      ),
+    ).toBe(false);
+    expect(
+      authInput.isAllowedDemoRequest(
         markedRequest("/api/v1/integrations/kravos/booking/options", false),
       ),
     ).toBe(false);

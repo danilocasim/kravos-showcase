@@ -36,7 +36,9 @@ For each environment:
 4. For local development only, allow `http://localhost:3000/auth/confirm` and/or the exact loopback origin used by the developer.
 5. Remove retired preview callback URLs after testing. Do not use an unrestricted redirect wildcard.
 
-Site URL is the fallback for any redirect that is not on the allow list, so an empty or loopback allow list silently sends hosted confirmation links to the local development origin. Because `config push` writes the whole auth section, every hosted value that must differ from the local defaults—currently TOTP MFA, email confirmations, OTP length, and email frequency—is pinned in `[remotes.production]`. Verify with `supabase config push --project-ref <ref>` reporting `Remote Auth config is up to date` and with `mailer_autoconfirm` remaining `false` on the project's `/auth/v1/settings`.
+Site URL is the fallback for any redirect that is not on the allow list, so an empty or loopback allow list silently sends hosted confirmation links to the local development origin. The default Supabase confirmation template redirects to `/auth/confirm` with a code; that route exchanges the code and creates the browser session when confirmations are enabled.
+
+The current hosted environment is a showcase and deliberately auto-confirms email signups (`mailer_autoconfirm = true`) because Supabase's built-in email provider is rate-limited to two messages per hour. This trades verified email ownership for reliable immediate access. Before a real release, configure custom SMTP, restore `enable_confirmations = true` in `[remotes.production.auth.email]`, and verify `mailer_autoconfirm` is `false`. Because `config push` writes the whole auth section, every hosted value that must differ from local defaults—currently TOTP MFA, confirmation behavior, OTP length, and email frequency—is pinned in `[remotes.production]`. Verify with `supabase config push --project-ref <ref>` reporting `Remote Auth config is up to date`.
 
 The application validates its own `next` parameter and accepts only same-origin absolute paths, but the Supabase allowlist is still required at the external auth boundary.
 

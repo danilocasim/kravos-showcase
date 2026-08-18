@@ -398,13 +398,14 @@ additional_redirect_urls = [
   "https://paw-polish.vercel.app/auth/confirm?**",
 ]
 
-# Pinned to the values already live in production so a config push cannot
-# silently weaken hosted authentication.
+# Pinned production auth controls. The showcase intentionally auto-confirms
+# email signups because the built-in provider is limited to two messages per
+# hour; configure custom SMTP and restore confirmations before real release.
 [remotes.production.auth.mfa.totp]
 enroll_enabled = true
 verify_enabled = true
 
 [remotes.production.auth.email]
-enable_confirmations = true
+enable_confirmations = false
 max_frequency = "1m0s"
 otp_length = 8

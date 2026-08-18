@@ -38,6 +38,25 @@ const createTestClient = (requests: Array<CapturedRequest>) =>
         }
         if (
           capturedRequest.method === "POST" &&
+          capturedRequest.url.pathname.endsWith("/rpc/kravos_create_pet")
+        ) {
+          return response([
+            {
+              id: petId,
+              owner_id: customerId,
+              name: "Baxter",
+              breed: "Beagle",
+              size: "MEDIUM",
+              age_years: 2,
+              temperament: null,
+              coat_condition: null,
+              allergies: null,
+              notes: null,
+            },
+          ]);
+        }
+        if (
+          capturedRequest.method === "POST" &&
           capturedRequest.url.pathname.includes("/rpc/")
         ) {
           return response([
@@ -166,6 +185,41 @@ describe("createSupabaseBookingRepository", () => {
       trusted_actor_id: customerId,
       requested_appointment_id: petId,
       requested_idempotency_key: "cancel-key",
+    });
+  });
+
+  it("targets the service-role-only pet RPC for a delegated customer", async () => {
+    const requests: Array<CapturedRequest> = [];
+    const repository = createSupabaseBookingRepository(createTestClient(requests), {
+      delegatedCustomerId: customerId,
+    });
+
+    await repository.createPet({
+      ownerId: customerId,
+      name: "Baxter",
+      breed: "Beagle",
+      size: "MEDIUM",
+      ageYears: 2,
+      temperament: null,
+      coatCondition: null,
+      allergies: null,
+      notes: null,
+    });
+
+    expect(
+      JSON.parse(
+        findRequest(requests, "POST", "rpc/kravos_create_pet").body,
+      ),
+    ).toEqual({
+      trusted_actor_id: customerId,
+      requested_name: "Baxter",
+      requested_breed: "Beagle",
+      requested_size: "MEDIUM",
+      requested_age_years: 2,
+      requested_temperament: null,
+      requested_coat_condition: null,
+      requested_allergies: null,
+      requested_notes: null,
     });
   });
 
