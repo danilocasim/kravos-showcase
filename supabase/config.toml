@@ -380,3 +380,31 @@ s3_region = "env(S3_REGION)"
 s3_access_key = "env(S3_ACCESS_KEY)"
 # Configures AWS_SECRET_ACCESS_KEY for S3 bucket
 s3_secret_key = "env(S3_SECRET_KEY)"
+
+# Hosted production project (paw-booking). `supabase config push` merges these
+# overrides on top of the local blocks above, so every value that must differ in
+# production is pinned here. Without the explicit auth URLs, Supabase falls back
+# to Site URL for any redirect that is not on the allow list, which sent hosted
+# confirmation links to the local development origin.
+[remotes.production]
+project_id = "kdhqcohfdcxdqjpziiak"
+
+[remotes.production.auth]
+site_url = "https://paw-polish.vercel.app"
+# Exact callback URLs only; the second entry covers the `next` query parameter
+# the application appends. Retired preview URLs must be removed after testing.
+additional_redirect_urls = [
+  "https://paw-polish.vercel.app/auth/confirm",
+  "https://paw-polish.vercel.app/auth/confirm?**",
+]
+
+# Pinned to the values already live in production so a config push cannot
+# silently weaken hosted authentication.
+[remotes.production.auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[remotes.production.auth.email]
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8

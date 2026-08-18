@@ -26,13 +26,17 @@ For the temporary showcase demo, only the name-based `booking/options`, `booking
 
 ## Supabase Auth URL configuration
 
-In **Authentication → URL Configuration** for each Supabase project:
+Hosted auth URLs are configuration as code. `supabase/config.toml` keeps the loopback values for `supabase start`, and the `[remotes.production]` block pins the hosted project. Apply changes with `supabase config push --project-ref <ref>` rather than editing the dashboard, so the local origin cannot silently return.
+
+For each environment:
 
 1. Set **Site URL** to the canonical HTTPS application origin for that environment.
-2. Add the exact production callback URL: `https://<production-host>/auth/confirm`.
+2. Add the exact production callback URL: `https://<production-host>/auth/confirm`, plus the `?**` form that matches the `next` query parameter the application appends.
 3. Add the exact callback URL for the preview selected for acceptance testing: `https://<preview-host>/auth/confirm`.
 4. For local development only, allow `http://localhost:3000/auth/confirm` and/or the exact loopback origin used by the developer.
 5. Remove retired preview callback URLs after testing. Do not use an unrestricted redirect wildcard.
+
+Site URL is the fallback for any redirect that is not on the allow list, so an empty or loopback allow list silently sends hosted confirmation links to the local development origin. Because `config push` writes the whole auth section, every hosted value that must differ from the local defaults—currently TOTP MFA, email confirmations, OTP length, and email frequency—is pinned in `[remotes.production]`. Verify with `supabase config push --project-ref <ref>` reporting `Remote Auth config is up to date` and with `mailer_autoconfirm` remaining `false` on the project's `/auth/v1/settings`.
 
 The application validates its own `next` parameter and accepts only same-origin absolute paths, but the Supabase allowlist is still required at the external auth boundary.
 
